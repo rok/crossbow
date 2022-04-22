@@ -1,0 +1,27 @@
+!Job
+target: !Target
+  head: 80dafc5414706f7254d3dbcf62bb0ef8ffdaf29a
+  email: szucs.krisztian@gmail.com
+  branch: delocate-fuse
+  remote: https://github.com/kszucs/arrow
+  github_repo: kszucs/arrow
+  version: 8.0.0.dev502
+  no_rc_version: 8.0.0.dev502
+  no_rc_semver_version: 8.0.0-dev502
+tasks:
+  wheel-macos-big-sur-cp310-universal2: !Task
+    ci: github
+    template: python-wheels/github.osx.arm64.yml
+    artifacts:
+    - pyarrow-8.0.0.dev502-cp310-cp310-macosx_10_13_universal2.whl
+    params:
+      arch: universal2
+      # Universal2 builds for both rosetta and native, but we currently can't
+      # configure SIMD for both architectures at the same time
+      arrow_simd_level: NONE
+      python_version: '3.10'
+      macos_deployment_target: '10.13'
+    branch: build-639-github-wheel-macos-big-sur-cp310-universal2
+    commit: 2bd27f5a842a68c38fb53518ec6af339bc2c75d4
+params: {}
+branch: build-639
