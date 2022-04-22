@@ -1,0 +1,27 @@
+!Job
+target: !Target
+  head: 2f2c28a053661ce75d89f4f789666d7aa3bd8775
+  email: unknown
+  branch: ARROW-16198-bump-vcpkg
+  remote: https://github.com/assignUser/arrow.git
+  github_repo: assignUser/arrow
+  version: 8.0.0.dev507
+  no_rc_version: 8.0.0.dev507
+  no_rc_semver_version: 8.0.0-dev507
+tasks:
+  wheel-macos-big-sur-cp310-universal2: !Task
+    ci: github
+    template: python-wheels/github.osx.arm64.yml
+    artifacts:
+    - pyarrow-8.0.0.dev507-cp310-cp310-macosx_10_13_universal2.whl
+    params:
+      arch: universal2
+      # Universal2 builds for both rosetta and native, but we currently can't
+      # configure SIMD for both architectures at the same time
+      arrow_simd_level: NONE
+      python_version: '3.10'
+      macos_deployment_target: '10.13'
+    branch: actions-1908-github-wheel-macos-big-sur-cp310-universal2
+    commit: 727ecf342e1cddbf9e0c4ce072a813f6188f5c5a
+params: {}
+branch: actions-1908
