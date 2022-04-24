@@ -1,0 +1,92 @@
+!Job
+target: !Target
+  head: 0c6abeb53a932f1c810dfee66876805cf59c9769
+  email: unknown
+  branch: release-ubuntu-22.04-csharp
+  remote: https://github.com/kou/arrow.git
+  github_repo: kou/arrow
+  version: 8.0.0.dev528
+  no_rc_version: 8.0.0.dev528
+  no_rc_semver_version: 8.0.0-dev528
+tasks:
+  verify-rc-source-csharp-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: csharp
+      distro: almalinux
+    branch: actions-1935-github-verify-rc-source-csharp-linux-almalinux-8-amd64
+    commit: 87cbd06a86a38e0c671cab8fe6e8e2758c9482f7
+  verify-rc-source-csharp-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: csharp
+      distro: ubuntu
+    branch: actions-1935-github-verify-rc-source-csharp-linux-ubuntu-22.04-amd64
+    commit: 1b63e7275613a129292616cdc602be727457b6dc
+  verify-rc-source-csharp-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: csharp
+      distro: ubuntu
+    branch: actions-1935-github-verify-rc-source-csharp-linux-ubuntu-20.04-amd64
+    commit: 799e85103b893176f1ff179917e16db9f10efb69
+  verify-rc-source-csharp-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: csharp
+      github_runner: self-hosted
+    branch: actions-1935-github-verify-rc-source-csharp-macos-arm64
+    commit: 1add7b52b27ae3f6b6d1ba8189ea4f17c211828a
+  verify-rc-source-csharp-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: csharp
+      github_runner: macos-10.15
+    branch: actions-1935-github-verify-rc-source-csharp-macos-amd64
+    commit: 8694eca57631c7c6cf5bd8c4a007010bdc2d4e77
+  verify-rc-source-csharp-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: csharp
+      distro: conda
+    branch: actions-1935-github-verify-rc-source-csharp-linux-conda-latest-amd64
+    commit: 0f7044b908bc66d227d47878cedeb825fddba4a6
+  verify-rc-source-csharp-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: csharp
+      distro: ubuntu
+    branch: actions-1935-github-verify-rc-source-csharp-linux-ubuntu-18.04-amd64
+    commit: d488deca217bab5d26a4eeb0250624257b2d8b70
+params: {}
+branch: actions-1935
