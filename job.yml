@@ -1,0 +1,37 @@
+!Job
+target: !Target
+  head: 8c19ebfabdc5df3905cda5b48b6ebe8b71b8db70
+  email: unknown
+  branch: gcsp
+  remote: https://github.com/emkornfield/arrow.git
+  github_repo: emkornfield/arrow
+  version: 8.0.0.dev586
+  no_rc_version: 8.0.0.dev586
+  no_rc_semver_version: 8.0.0-dev586
+tasks:
+  test-debian-10-cpp-i386: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: i386
+        DEBIAN: '10'
+      flags: -e ARROW_S3=OFF -e ARROW_GANDIVA=OFF
+      image: debian-cpp
+    branch: actions-1944-github-test-debian-10-cpp-i386
+    commit: 1644d20e4ce93b0a3a0c8902f66b593279ff0340
+  test-debian-10-cpp-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: amd64
+        DEBIAN: '10'
+      image: debian-cpp
+
+    branch: actions-1944-github-test-debian-10-cpp-amd64
+    commit: 597c2ee1e928852edf94a610fcd7c5dea1d4c12f
+params: {}
+branch: actions-1944
