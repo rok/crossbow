@@ -1,0 +1,201 @@
+!Job
+target: !Target
+  head: c4151ca30cfd04f07e026e84217f7f0f4698e3c9
+  email: unknown
+  branch: rand_bytes
+  remote: https://github.com/andersonm-ibm/arrow.git
+  github_repo: andersonm-ibm/arrow
+  version: 8.0.0.dev463
+  no_rc_version: 8.0.0.dev463
+  no_rc_semver_version: 8.0.0-dev463
+tasks:
+  test-ubuntu-18.04-cpp: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      image: ubuntu-cpp
+    branch: actions-1954-github-test-ubuntu-18.04-cpp
+    commit: 74214d52cfb6033727ded58045947973b438a6ad
+  test-ubuntu-20.04-cpp-bundled: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 20.04
+      image: ubuntu-cpp-bundled
+
+    branch: actions-1954-github-test-ubuntu-20.04-cpp-bundled
+    commit: bb01144812de1b37cccd0a6761e69605a051bc64
+  test-ubuntu-20.04-cpp-14: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 20.04
+      flags: -e CMAKE_ARGS=-DCMAKE_CXX_STANDARD=14
+      image: ubuntu-cpp
+    branch: actions-1954-github-test-ubuntu-20.04-cpp-14
+    commit: f1e16b75703153b427532e5c5fa3706c38c7282b
+  test-ubuntu-18.04-cpp-static: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 18.04
+      flags: -e ARROW_BUILD_SHARED=OFF -e ARROW_BUILD_STATIC=ON -e ARROW_TEST_LINKAGE=static
+      image: ubuntu-cpp
+
+    branch: actions-1954-github-test-ubuntu-18.04-cpp-static
+    commit: 5d158266c03de21ee4fbf807802b1e4407023be7
+  test-debian-11-cpp-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: amd64
+        DEBIAN: '11'
+      image: debian-cpp
+
+    branch: actions-1954-github-test-debian-11-cpp-amd64
+    commit: a74ecc2ad37667b4caa2e25a2abf3d8648eb3640
+  test-ubuntu-22.04-cpp: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      image: ubuntu-cpp
+
+    branch: actions-1954-github-test-ubuntu-22.04-cpp
+    commit: 1b852a49246f64147fb9cfcfe8555bcee84d5d59
+  test-ubuntu-20.04-cpp-17: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 20.04
+      flags: -e CMAKE_ARGS=-DCMAKE_CXX_STANDARD=17
+      image: ubuntu-cpp
+
+    branch: actions-1954-github-test-ubuntu-20.04-cpp-17
+    commit: 5831c0cd08cabd4f86fc93a52d3c72581ee2f642
+  test-conda-cpp: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      image: conda-cpp
+    branch: actions-1954-github-test-conda-cpp
+    commit: 7f05231af67ef979c03f0751625d07d105a9bfbc
+  test-ubuntu-20.04-cpp: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      image: ubuntu-cpp
+    branch: actions-1954-github-test-ubuntu-20.04-cpp
+    commit: 9f90bdea23fe8cce79ee69ed251c4312727a99af
+  test-ubuntu-20.04-cpp-thread-sanitizer: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        # clang-tools and llvm version need to be synchronized so as
+        # to have the right llvm-symbolizer version
+        CLANG_TOOLS: 11
+        LLVM: 11
+        UBUNTU: 20.04
+      image: ubuntu-cpp-thread-sanitizer
+
+    branch: actions-1954-github-test-ubuntu-20.04-cpp-thread-sanitizer
+    commit: 6b6a18ff654e081576c9466dd620399f8b902fd4
+  test-build-cpp-fuzz: !Task
+    ci: github
+    template: fuzz-tests/github.oss-fuzz.yml
+    artifacts: []
+    params: {}
+    branch: actions-1954-github-test-build-cpp-fuzz
+    commit: 0e3c5aef25780546da801ae475817b30ee03f0d7
+  test-conda-cpp-valgrind: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      image: conda-cpp-valgrind
+
+    branch: actions-1954-azure-test-conda-cpp-valgrind
+    commit: 40bbbef90ef23684402110f1538ecb4179a7e4e8
+  test-ubuntu-18.04-cpp-release: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 18.04
+      flags: -e ARROW_BUILD_TYPE=release
+      image: ubuntu-cpp
+
+    branch: actions-1954-github-test-ubuntu-18.04-cpp-release
+    commit: f6077c898a298f4db032f34b7138a3c074282840
+  test-debian-11-cpp-i386: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: i386
+        DEBIAN: '11'
+      flags: -e ARROW_S3=OFF -e ARROW_GANDIVA=OFF
+      image: debian-cpp
+
+    branch: actions-1954-github-test-debian-11-cpp-i386
+    commit: f203104785db4b74a1e7af313e64ffcfcee17e6d
+  test-fedora-35-cpp: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        FEDORA: 35
+      image: fedora-cpp
+
+    branch: actions-1954-github-test-fedora-35-cpp
+    commit: 4ce43fa461dd82d2f2cdee79aa8cce044eaf63ea
+  test-debian-10-cpp-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: amd64
+        DEBIAN: '10'
+      image: debian-cpp
+
+    branch: actions-1954-github-test-debian-10-cpp-amd64
+    commit: 9c0c8cf75a8711f8cf1618f83359c544b22fcde6
+  test-debian-10-cpp-i386: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: i386
+        DEBIAN: '10'
+      flags: -e ARROW_S3=OFF -e ARROW_GANDIVA=OFF
+      image: debian-cpp
+    branch: actions-1954-github-test-debian-10-cpp-i386
+    commit: 71a3c7d947247d5d0756b06a1ce21a51f81f9c3a
+params: {}
+branch: actions-1954
