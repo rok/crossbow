@@ -1,0 +1,206 @@
+!Job
+target: !Target
+  head: f32b89031bdf933b6a3d780156be058ccf12ec85
+  email: unknown
+  branch: release-8.0.0-rc0
+  remote: https://github.com/kszucs/arrow.git
+  github_repo: kszucs/arrow
+  version: 9.0.0.dev1
+  no_rc_version: 9.0.0.dev1
+  no_rc_semver_version: 9.0.0-dev1
+tasks:
+  verify-rc-binaries-jars-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: jars
+      distro: ubuntu
+    branch: actions-1963-github-verify-rc-binaries-jars-linux-ubuntu-22.04-amd64
+    commit: a2dffe701b36cd19209e4bbc2c113ebec8666121
+  verify-rc-binaries-wheels-macos-10.15-amd64-conda: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      env:
+        USE_CONDA: 1
+      github_runner: macos-10.15
+      target: wheels
+
+  # The github hosted macos-11 runners are in preview only, but should be switched once they are generally available:
+  #   https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+    branch: actions-1963-github-verify-rc-binaries-wheels-macos-10.15-amd64-conda
+    commit: 7959bc0be13cd08dabd76de1da0d46bf630f37cb
+  verify-rc-binaries-wheels-macos-11-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      github_runner: self-hosted
+      arch_emulation: arm64
+      target: wheels
+
+  ######################## Windows verification ##############################
+
+    branch: actions-1963-github-verify-rc-binaries-wheels-macos-11-arm64
+    commit: cf204d9f20579c9885874500f2afb1a52a521569
+  verify-rc-binaries-wheels-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: wheels
+      distro: ubuntu
+
+
+  # Separated these tasks from the loop above due to:
+  # - 'binary' verification is not platform dependent
+  # - 'yum' and 'apt' requires docker so we need to run the verification script
+  #   directly on the host
+    branch: actions-1963-github-verify-rc-binaries-wheels-linux-ubuntu-22.04-amd64
+    commit: 7ca43247e158f1fbe19af6c360b9f15bc2daae2d
+  verify-rc-binaries-jars-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: jars
+      distro: almalinux
+    branch: actions-1963-github-verify-rc-binaries-jars-linux-almalinux-8-amd64
+    commit: 55294e66a35a8b379d390af3112e30d1c05d9f0a
+  verify-rc-binaries-wheels-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: wheels
+      distro: ubuntu
+
+    branch: actions-1963-github-verify-rc-binaries-wheels-linux-ubuntu-20.04-amd64
+    commit: 7ca43247e158f1fbe19af6c360b9f15bc2daae2d
+  verify-rc-binaries-jars-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: jars
+      distro: ubuntu
+    branch: actions-1963-github-verify-rc-binaries-jars-linux-ubuntu-18.04-amd64
+    commit: a2dffe701b36cd19209e4bbc2c113ebec8666121
+  verify-rc-binaries-yum-linux-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.yml
+    artifacts: []
+    params:
+      target: yum
+    branch: actions-1963-github-verify-rc-binaries-yum-linux-amd64
+    commit: 1a44f1aba4f28e79963ddbbcc8a615faacb4eda2
+  verify-rc-binaries-binary-linux-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.yml
+    artifacts: []
+    params:
+      target: binary
+    branch: actions-1963-github-verify-rc-binaries-binary-linux-amd64
+    commit: 24cea81f8d3c794a86374fb7d26ee72f69c6fcce
+  verify-rc-binaries-wheels-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: wheels
+      distro: ubuntu
+
+    branch: actions-1963-github-verify-rc-binaries-wheels-linux-ubuntu-18.04-amd64
+    commit: 7ca43247e158f1fbe19af6c360b9f15bc2daae2d
+  verify-rc-binaries-wheels-windows: !Task
+    ci: github
+    template: verify-rc/github.win.yml
+    artifacts: []
+    params:
+      env:
+        PYARROW_TEST_GDB: OFF
+      script: verify-release-candidate-wheels.bat
+
+############################## Docker tests ##################################
+
+    branch: actions-1963-github-verify-rc-binaries-wheels-windows
+    commit: 1cbfc34632817c9591cb750ab5b85bf2d33cf819
+  verify-rc-binaries-jars-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: jars
+      distro: conda
+    branch: actions-1963-github-verify-rc-binaries-jars-linux-conda-latest-amd64
+    commit: 0d0dc41452898f87d577c9982b5fe7e5a0855bb9
+  verify-rc-binaries-apt-linux-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.yml
+    artifacts: []
+    params:
+      target: apt
+
+  ######################## macOS verification ################################
+
+    branch: actions-1963-github-verify-rc-binaries-apt-linux-amd64
+    commit: da11f472a4506c9bc0d262cb2e16cd38f3b34db5
+  verify-rc-binaries-wheels-macos-11-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      github_runner: self-hosted
+      arch_emulation: x86_64
+      target: wheels
+    branch: actions-1963-github-verify-rc-binaries-wheels-macos-11-amd64
+    commit: 87ccccdf0456f1971033d243501a93f8f82fb46b
+  verify-rc-binaries-wheels-macos-10.15-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      github_runner: macos-10.15
+      target: wheels
+
+    branch: actions-1963-github-verify-rc-binaries-wheels-macos-10.15-amd64
+    commit: 1cd8d04922903f0109d03875ee56eb1e4ae3a450
+  verify-rc-binaries-wheels-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: wheels
+      distro: conda
+
+    branch: actions-1963-github-verify-rc-binaries-wheels-linux-conda-latest-amd64
+    commit: da1013b0214d343b9f500d204060d0379c18cedc
+  verify-rc-binaries-jars-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: jars
+      distro: ubuntu
+    branch: actions-1963-github-verify-rc-binaries-jars-linux-ubuntu-20.04-amd64
+    commit: 07c1c36f3f462870e2480d3cfa9adf3e78af2142
+  verify-rc-binaries-wheels-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: wheels
+      distro: almalinux
+
+    branch: actions-1963-github-verify-rc-binaries-wheels-linux-almalinux-8-amd64
+    commit: f5ab9cebc69791413015a2ef19eea77c547fd3f4
+params:
+  release: 8.0.0
+  rc: '0'
+branch: actions-1963
