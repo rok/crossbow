@@ -1,0 +1,38 @@
+!Job
+target: !Target
+  head: af50e4e486af315aef15370aeee2a3a69440c74a
+  email: unknown
+  branch: gcc12
+  remote: https://github.com/paleolimbot/arrow.git
+  github_repo: paleolimbot/arrow
+  version: 8.0.0.dev546
+  no_rc_version: 8.0.0.dev546
+  no_rc_semver_version: 8.0.0-dev546
+tasks:
+  test-r-gcc-12: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 22.04
+        GCC_VERSION: 12
+      image: ubuntu-r-only-r
+
+    branch: actions-1981-github-test-r-gcc-12
+    commit: bdbcf0cd48acd456eedf911f780d62031a47715c
+  test-r-gcc-11: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 22.04
+        GCC_VERSION: 11
+      image: ubuntu-r-only-r
+
+  # This also has -flto=auto
+    branch: actions-1981-github-test-r-gcc-11
+    commit: fa23f6686e7ead0c32967e9120eb811e9265bfb5
+params: {}
+branch: actions-1981
