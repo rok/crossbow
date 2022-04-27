@@ -1,0 +1,73 @@
+!Job
+target: !Target
+  head: 02c2e9e5cab2662134b95a548f36fdda50aab21b
+  email: unknown
+  branch: release-8.0.0-rc1
+  remote: https://github.com/kszucs/arrow.git
+  github_repo: kszucs/arrow
+  version: 9.0.0.dev1
+  no_rc_version: 9.0.0.dev1
+  no_rc_semver_version: 9.0.0-dev1
+tasks:
+  verify-rc-binaries-wheels-macos-10.15-amd64-conda: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      env:
+        USE_CONDA: 1
+      github_runner: macos-10.15
+      target: wheels
+    branch: actions-1982-github-verify-rc-binaries-wheels-macos-10.15-amd64-conda
+    commit: efd535ea1163e2386923d3a46e40bff80700d5c1
+  verify-rc-binaries-wheels-macos-10.15-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      github_runner: macos-10.15
+      target: wheels
+
+    branch: actions-1982-github-verify-rc-binaries-wheels-macos-10.15-amd64
+    commit: 4db66057170224403f5664e5911a908d60c23f20
+  verify-rc-binaries-wheels-macos-11-amd64-conda: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      env:
+        USE_CONDA: 1
+      github_runner: macos-11
+      target: wheels
+
+    branch: actions-1982-github-verify-rc-binaries-wheels-macos-11-amd64-conda
+    commit: bf5c710951b8fc990b0ebaddde07baeb76f4f590
+  verify-rc-binaries-wheels-macos-11-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      github_runner: self-hosted
+      arch_emulation: arm64
+      target: wheels
+
+  ######################## Windows verification ##############################
+
+    branch: actions-1982-github-verify-rc-binaries-wheels-macos-11-arm64
+    commit: 54082a2b0d18342b2bf24a426393c0eb1d460654
+  verify-rc-binaries-wheels-macos-11-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      github_runner: macos-11
+      target: wheels
+
+    branch: actions-1982-github-verify-rc-binaries-wheels-macos-11-amd64
+    commit: 44ac38bbdcd0f992e56b7926a8fb146eca3bc40a
+params:
+  release: 8.0.0
+  rc: '1'
+branch: actions-1982
