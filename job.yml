@@ -1,0 +1,51 @@
+!Job
+target: !Target
+  head: 6aa07e3d87f4fb52ce2c467dfca81f4c72c11988
+  email: unknown
+  branch: ARROW-16461-atomic-finished
+  remote: https://github.com/pitrou/arrow.git
+  github_repo: pitrou/arrow
+  version: 8.0.0.dev611
+  no_rc_version: 8.0.0.dev611
+  no_rc_semver_version: 8.0.0-dev611
+tasks:
+  test-fedora-r-clang-sanitizer: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        R_PRUNE_DEPS: true
+      image: fedora-r-clang-sanitizer
+
+    branch: actions-2017-azure-test-fedora-r-clang-sanitizer
+    commit: 876c3bf89caab8f61476559fbe40f57dd17e8b5f
+  test-ubuntu-20.04-cpp-thread-sanitizer: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        # clang-tools and llvm version need to be synchronized so as
+        # to have the right llvm-symbolizer version
+        CLANG_TOOLS: 11
+        LLVM: 11
+        UBUNTU: 20.04
+      image: ubuntu-cpp-thread-sanitizer
+
+    branch: actions-2017-github-test-ubuntu-20.04-cpp-thread-sanitizer
+    commit: 2798205c13250058db45789b592c5eff4657948f
+  test-ubuntu-18.04-r-sanitizer: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 18.04
+        R_PRUNE_DEPS: true
+      image: ubuntu-r-sanitizer
+
+    branch: actions-2017-azure-test-ubuntu-18.04-r-sanitizer
+    commit: 94f9a506047ea130a8d31255bb134c81e5090ab8
+params: {}
+branch: actions-2017
