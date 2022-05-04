@@ -1,0 +1,48 @@
+!Job
+target: !Target
+  head: aa4f1e60da57b5c1974cb7fd93acd95936cdefa9
+  email: unknown
+  branch: verify-8.0.0-rc3
+  remote: https://github.com/kszucs/arrow.git
+  github_repo: kszucs/arrow
+  version: 8.0.0.dev601
+  no_rc_version: 8.0.0.dev601
+  no_rc_semver_version: 8.0.0-dev601
+tasks:
+  verify-rc-binaries-wheels-macos-11-amd64-conda: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      env:
+        USE_CONDA: 1
+      github_runner: macos-11
+      target: wheels
+
+    branch: actions-2008-github-verify-rc-binaries-wheels-macos-11-amd64-conda
+    commit: 8e6e4f082fddaa15bf9208295e9f4b4f5a7198e3
+  verify-rc-binaries-wheels-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      target: wheels
+      distro: conda
+
+    branch: actions-2008-github-verify-rc-binaries-wheels-linux-conda-latest-amd64
+    commit: 8b27a1e3d60d547cb764ac786c6102ebebc52746
+  verify-rc-binaries-wheels-macos-10.15-amd64-conda: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      env:
+        USE_CONDA: 1
+      github_runner: macos-10.15
+      target: wheels
+    branch: actions-2008-github-verify-rc-binaries-wheels-macos-10.15-amd64-conda
+    commit: 9c6f30e4de6b78e7e364c9342ea6037235d2f1ed
+params:
+  release: 8.0.0
+  rc: '3'
+branch: actions-2008
