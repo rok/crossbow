@@ -1,0 +1,63 @@
+!Job
+target: !Target
+  head: d13a8ac0b2995f348623c9d8bb95d7579636dcde
+  email: unknown
+  branch: ARROW-16458
+  remote: https://github.com/raulcd/arrow.git
+  github_repo: raulcd/arrow
+  version: 8.0.0.dev613
+  no_rc_version: 8.0.0.dev613
+  no_rc_semver_version: 8.0.0-dev613
+tasks:
+  test-conda-python-3.9-dask-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.9
+        DASK: latest
+      # use the latest dask release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-dask
+    branch: actions-2018-github-test-conda-python-3.9-dask-latest
+    commit: 7a03a1c5692c9d7999850449f40374f91879ebab
+  test-conda-python-3.9-dask-master: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.9
+        DASK: master
+      # use the latest dask release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-dask
+
+# Turbodbc is currently failing to build. See:
+# https://issues.apache.org/jira/browse/ARROW-15997
+# #   test-conda-python-3.7-turbodbc-latest:
+#     ci: github
+#     template: docker-tests/github.linux.yml
+#     params:
+#       env:
+#         PYTHON: 3.7
+#         TURBODBC: latest
+#       # use the latest turbodbc release, so prevent reusing any cached layers
+#       flags: --no-leaf-cache
+#       image: conda-python-turbodbc
+# #   test-conda-python-3.7-turbodbc-master:
+#     ci: github
+#     template: docker-tests/github.linux.yml
+#     params:
+#       env:
+#         PYTHON: 3.7
+#         TURBODBC: master
+#       # use the latest turbodbc release, so prevent reusing any cached layers
+#       flags: --no-leaf-cache
+#       image: conda-python-turbodbc
+# 
+    branch: actions-2018-github-test-conda-python-3.9-dask-master
+    commit: 8147d7144663bd546268d998353661f0ab1831f2
+params: {}
+branch: actions-2018
