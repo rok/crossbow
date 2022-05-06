@@ -1,0 +1,26 @@
+!Job
+target: !Target
+  head: 6d9882158e359e3ff40756305ae4957f2372f630
+  email: unknown
+  branch: ARROW-16489-fix-encoding
+  remote: https://github.com/assignUser/arrow.git
+  github_repo: assignUser/arrow
+  version: 8.0.0.dev621
+  no_rc_version: 8.0.0.dev621
+  no_rc_semver_version: 8.0.0-dev621
+tasks:
+  test-r-rhub-debian-gcc-devel-lto-latest: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rhub
+      r_image: debian-gcc-devel-lto
+      r_tag: latest
+      flags: -e NOT_CRAN=false -e INSTALL_ARGS=--use-LTO
+
+  # This one has -flto=auto
+    branch: actions-2025-azure-test-r-rhub-debian-gcc-devel-lto-latest
+    commit: 8a952fabe0df7639bf74ba9e6844c5c7bc628c23
+params: {}
+branch: actions-2025
