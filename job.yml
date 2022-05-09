@@ -1,0 +1,28 @@
+!Job
+target: !Target
+  head: 528c63964fc568944c17af1448dec3037d1c192e
+  email: unknown
+  branch: docs-matomo
+  remote: https://github.com/kou/arrow.git
+  github_repo: kou/arrow
+  version: 9.0.0.dev7
+  no_rc_version: 9.0.0.dev7
+  no_rc_semver_version: 9.0.0-dev7
+tasks:
+  test-ubuntu-default-docs: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts:
+    - docs.tar.gz
+    params:
+      artifacts: build/docs.tar.gz
+      flags: -v $PWD/build/:/build/
+      image: ubuntu-docs
+      post_script: |
+        cd build
+        sudo chown -R ${USER}: .
+        tar cvzf docs.tar.gz docs
+    branch: actions-2044-azure-test-ubuntu-default-docs
+    commit: fd4df78b8be63c0de788f265cdef270119ddb98d
+params: {}
+branch: actions-2044
