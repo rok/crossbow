@@ -1,0 +1,371 @@
+!Job
+target: !Target
+  head: 30c2e4800abca530a87f1c1db6a8a9827cf68498
+  email: unknown
+  branch: r_42_ci_update
+  remote: https://github.com/dragosmg/arrow.git
+  github_repo: dragosmg/arrow
+  version: 9.0.0.dev21
+  no_rc_version: 9.0.0.dev21
+  no_rc_semver_version: 9.0.0-dev21
+tasks:
+  test-r-depsource-system: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: -e ARROW_DEPENDENCY_SOURCE=SYSTEM
+      image: ubuntu-r-only-r
+
+    branch: actions-2055-github-test-r-depsource-system
+    commit: 68a4ca60cad591e3316013933cb49964ee04c092
+  test-ubuntu-18.04-r-sanitizer: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 18.04
+        R_PRUNE_DEPS: true
+      image: ubuntu-r-sanitizer
+
+    branch: actions-2055-azure-test-ubuntu-18.04-r-sanitizer
+    commit: 4470f3bd333df695e2717f78e6cc411314e8ddac
+  test-r-offline-minimal: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e TEST_OFFLINE_BUILD=true
+
+    branch: actions-2055-azure-test-r-offline-minimal
+    commit: 351c90463cca3c89b1d3950aebaa69a4f5456d66
+  conda-osx-clang-py37-r40: !Task
+    ci: azure
+    template: conda-recipes/azure.osx.yml
+    artifacts:
+    - arrow-cpp-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    - pyarrow-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    params:
+      config: osx_64_numpy1.18python3.7.____cpython
+      r_config: osx_64_r_base4.0
+    branch: actions-2055-azure-conda-osx-clang-py37-r40
+    commit: d0765d04e50db76a6f9f045d7718b5a7f5e5b2be
+  conda-win-vs2017-py37-r41: !Task
+    ci: azure
+    template: conda-recipes/azure.win.yml
+    artifacts:
+    - arrow-cpp-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    - pyarrow-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    params:
+      config: win_64_cuda_compiler_versionNonenumpy1.18python3.7.____cpython
+      r_config: win_64_r_base4.1
+    branch: actions-2055-azure-conda-win-vs2017-py37-r41
+    commit: 8887e2df6d5d269e7159ef3e10828ed551f9d2a2
+  test-r-rhub-ubuntu-gcc-release-latest: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rhub
+      r_image: ubuntu-gcc-release
+      r_tag: latest
+    branch: actions-2055-azure-test-r-rhub-ubuntu-gcc-release-latest
+    commit: e30e9852de14a33e1003ce520158e73df6e1b308
+  homebrew-r-brew: !Task
+    ci: github
+    template: r/github.macos.brew.yml
+    artifacts: []
+    params:
+      formula: apache-arrow.rb
+
+  ############################## Arrow JAR's ##################################
+
+    branch: actions-2055-github-homebrew-r-brew
+    commit: 000ba930c416b72a591b1cc537b1edba5d924216
+  test-r-rstudio-r-base-4.2-opensuse15: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rstudio
+      r_image: r-base
+      r_tag: 4.2-opensuse15
+    branch: actions-2055-azure-test-r-rstudio-r-base-4.2-opensuse15
+    commit: 97c63ea6a6da369252f44004dfc0ab7b47d4081d
+  conda-osx-clang-py37-r41: !Task
+    ci: azure
+    template: conda-recipes/azure.osx.yml
+    artifacts:
+    - arrow-cpp-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    - pyarrow-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    params:
+      config: osx_64_numpy1.18python3.7.____cpython
+      r_config: osx_64_r_base4.1
+    branch: actions-2055-azure-conda-osx-clang-py37-r41
+    commit: d73667326d320d9702aa6e603f82533bfe64a50f
+  test-r-ubuntu-22.04: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 22.04
+        R_PRUNE_DEPS: true
+      image: ubuntu-r-only-r
+
+  # This also has -flto=auto
+    branch: actions-2055-github-test-r-ubuntu-22.04
+    commit: e9bd301190599e67ea9e916edabed516ca5412c7
+  test-r-gcc-12: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 22.04
+        GCC_VERSION: 12
+      image: ubuntu-r-only-r
+
+    branch: actions-2055-github-test-r-gcc-12
+    commit: d8fb1012d18f4b0c16ce1e514ac66c70f3c4bed5
+  test-r-arrow-backwards-compatibility: !Task
+    ci: github
+    template: r/github.linux.arrow.version.back.compat.yml
+    artifacts: []
+    params: {}
+    branch: actions-2055-github-test-r-arrow-backwards-compatibility
+    commit: 1316d56eb7645ddcb5b2e8c44d4e52585655da95
+  test-r-depsource-bundled: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e ARROW_DEPENDENCY_SOURCE=BUNDLED
+
+    branch: actions-2055-azure-test-r-depsource-bundled
+    commit: 200dd3b43fbf43efba910e4a9919dffe6abe6460
+  test-r-devdocs: !Task
+    ci: github
+    template: r/github.devdocs.yml
+    artifacts: []
+    params: {}
+    branch: actions-2055-github-test-r-devdocs
+    commit: 1e2abe721a196a786784180da6d3fb3e20618d77
+  test-r-rstudio-r-base-4.2-focal: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rstudio
+      r_image: r-base
+      r_tag: 4.2-focal
+    branch: actions-2055-azure-test-r-rstudio-r-base-4.2-focal
+    commit: 116448f99fc4355a09653f5172c515e1e148b7de
+  test-r-rhub-debian-gcc-devel-lto-latest: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rhub
+      r_image: debian-gcc-devel-lto
+      r_tag: latest
+      flags: -e NOT_CRAN=false -e INSTALL_ARGS=--use-LTO
+
+  # This one has -flto=auto
+    branch: actions-2055-azure-test-r-rhub-debian-gcc-devel-lto-latest
+    commit: d6fe37cbc575a8f98597252203ef9fb48d501e91
+  test-r-rhub-debian-gcc-release-custom-ccache: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rhub
+      r_image: debian-gcc-release
+      r_tag: latest
+      r_custom_ccache: true
+
+    branch: actions-2055-azure-test-r-rhub-debian-gcc-release-custom-ccache
+    commit: c5cce402a93cfdf53e1b605a1070f94e6cb57994
+  test-fedora-r-clang-sanitizer: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        R_PRUNE_DEPS: true
+      image: fedora-r-clang-sanitizer
+
+    branch: actions-2055-azure-test-fedora-r-clang-sanitizer
+    commit: 00703f71d8b84fce449621fc44a89394586815dd
+  test-r-dev-duckdb: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        R_DUCKDB_DEV: true
+      image: ubuntu-r-only-r
+
+    branch: actions-2055-github-test-r-dev-duckdb
+    commit: ee1a38c1f6c94d79bcbbc47dee1c39f23e67db5a
+  test-r-minimal-build: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e LIBARROW_MINIMAL=TRUE
+
+    branch: actions-2055-azure-test-r-minimal-build
+    commit: ae84efc49b3d9c5922b6c77b178dd4ee3c6bfd1c
+  test-r-linux-rchk: !Task
+    ci: github
+    template: r/github.linux.rchk.yml
+    artifacts: []
+    params: {}
+    branch: actions-2055-github-test-r-linux-rchk
+    commit: ff3c09bf994787d406d4120cd58ecc334676f321
+  test-r-offline-maximal: !Task
+    ci: github
+    template: r/github.linux.offline.build.yml
+    artifacts: []
+    params: {}
+    branch: actions-2055-github-test-r-offline-maximal
+    commit: 58a166a1a2a9c6f47ab517fd9d3bd4c5e2496872
+  homebrew-r-autobrew: !Task
+    ci: github
+    template: r/github.macos.autobrew.yml
+    artifacts: []
+    params: {}
+    branch: actions-2055-github-homebrew-r-autobrew
+    commit: a5fc412fd03e70f7020b5e0e055e864fe8b9d265
+  test-r-rstudio-r-base-4.2-opensuse42: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rstudio
+      r_image: r-base
+      r_tag: 4.2-opensuse42
+
+  # This is with R built with --enable-lto
+  # CRAN also does R CMD INSTALL --use-LTO
+  # which overrides the UseLTO field in r/DESCRIPTION
+    branch: actions-2055-azure-test-r-rstudio-r-base-4.2-opensuse42
+    commit: fe7cebeeefdae5a6d3f8a7dabf18bbd845129f48
+  conda-linux-gcc-py37-cpu-r41: !Task
+    ci: azure
+    template: conda-recipes/azure.linux.yml
+    artifacts:
+    - arrow-cpp-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    - pyarrow-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    params:
+      config: linux_64_c_compiler_version9cuda_compiler_versionNonecxx_compiler_version9numpy1.18python3.7.____cpython
+      r_config: linux_64_r_base4.1
+    branch: actions-2055-azure-conda-linux-gcc-py37-cpu-r41
+    commit: 4544537037dd57ba8312574e3ae3a0f4788ed2a2
+  test-r-rstudio-r-base-4.1-centos7-devtoolset-8: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rstudio
+      r_image: r-base
+      r_tag: 4.1-centos7
+      devtoolset_version: 8
+
+    branch: actions-2055-azure-test-r-rstudio-r-base-4.1-centos7-devtoolset-8
+    commit: a12d9a3cb8ebcd7db0ebb06a43713cd3a2ff5d49
+  test-r-rocker-r-base-latest: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+    branch: actions-2055-azure-test-r-rocker-r-base-latest
+    commit: b3d383c347df88d7d51bb8ab7bb99df95780dfa1
+  test-r-gcc-11: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 22.04
+        GCC_VERSION: 11
+      image: ubuntu-r-only-r
+
+  # This also has -flto=auto
+    branch: actions-2055-github-test-r-gcc-11
+    commit: 4083d3a6c0021276a8e4be1cca817e93aa69062a
+  conda-win-vs2017-py37-r40: !Task
+    ci: azure
+    template: conda-recipes/azure.win.yml
+    artifacts:
+    - arrow-cpp-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    - pyarrow-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    params:
+      config: win_64_cuda_compiler_versionNonenumpy1.18python3.7.____cpython
+      r_config: win_64_r_base4.0
+    branch: actions-2055-azure-conda-win-vs2017-py37-r40
+    commit: 521dd08a17ab9ab5fb8f9bb90d2690cbd25a7fe7
+  conda-linux-gcc-py37-cpu-r40: !Task
+    ci: azure
+    template: conda-recipes/azure.linux.yml
+    artifacts:
+    - arrow-cpp-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    - pyarrow-9.0.0.dev21-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    params:
+      config: linux_64_c_compiler_version9cuda_compiler_versionNonecxx_compiler_version9numpy1.18python3.7.____cpython
+      r_config: linux_64_r_base4.0
+    branch: actions-2055-azure-conda-linux-gcc-py37-cpu-r40
+    commit: 4a6f25d95fd78f96f200e3f24a7f810c52f5f636
+  test-r-linux-valgrind: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_R_DEV: 'TRUE'
+        UBUNTU: 18.04
+      image: ubuntu-r-valgrind
+
+    branch: actions-2055-azure-test-r-linux-valgrind
+    commit: a31b4e1cca9265b43e7e9655966ca21504d3a6ae
+  test-r-install-local: !Task
+    ci: github
+    template: r/github.macos-linux.local.yml
+    artifacts: []
+    params: {}
+    branch: actions-2055-github-test-r-install-local
+    commit: 3f70b09dff79b9dd1b765da7381bbef60009539c
+  test-r-versions: !Task
+    ci: github
+    template: r/github.linux.versions.yml
+    artifacts: []
+    params:
+      MATRIX: ${{ matrix.r_version }}
+
+    branch: actions-2055-github-test-r-versions
+    commit: d8c2a3ece26b14369a44c493d306686a2d8d7ee1
+  test-r-linux-as-cran: !Task
+    ci: github
+    template: r/github.linux.cran.yml
+    artifacts: []
+    params:
+      MATRIX: ${{ matrix.r_image }}
+
+    branch: actions-2055-github-test-r-linux-as-cran
+    commit: 10ebbe7e721459a53ff4ba3e684426699c36c579
+params: {}
+branch: actions-2055
