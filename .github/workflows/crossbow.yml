@@ -1,0 +1,147 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# NOTE: must set "Crossbow" as name to have the badge links working in the
+# github comment reports!
+name: Crossbow
+on:
+  push:
+    branches:
+      - "*-github-*"
+
+
+env:
+  ARROW_S3: ON
+  CC: "clang"
+  CXX: "clang++"
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
+  PYARROW_BUILD_VERBOSE: 1
+  PYARROW_VERSION: "9.0.0.dev14"
+  PYTHON_VERSION: "3.7"
+  PYTHON: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3.7"
+  VCPKG_DEFAULT_TRIPLET: amd64-osx-static-release
+  VCPKG_FEATURE_FLAGS: "manifests"
+  VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/arrow/ci/vcpkg
+  VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+jobs:
+  build:
+    name: Build wheel for OS X
+    runs-on: macos-10.15
+    steps:
+      - name: Checkout Arrow
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: apache/arrow
+          ref: 5a4b3db396f88898917620de50863b6d3a477a7a
+          submodules: recursive
+
+
+      - name: Install System Dependencies
+        run: brew install bash bison coreutils ninja
+
+      - name: Install Specific CMake version
+        uses: lukka/get-cmake@v3.21.2
+
+      - name: Retrieve VCPKG version from arrow/.env
+        shell: bash
+        run: |
+          vcpkg_version=$(cat "arrow/.env" | grep "VCPKG" | cut -d "=" -f2 | tr -d '"')
+          echo "VCPKG_VERSION=$vcpkg_version" >> $GITHUB_ENV
+
+      - uses: actions/cache@v2
+        id: vcpkg-cache
+        with:
+          path: vcpkg
+          key: vcpkg-10.13-${{ env.VCPKG_VERSION }}-${{ hashFiles('arrow/ci/vcpkg/vcpkg.json', 'arrow/ci/vcpkg/*.patch', 'arrow/ci/vcpkg/*osx*.cmake') }}-0
+
+      - name: Install Vcpkg
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "10.15"
+        run: arrow/ci/scripts/install_vcpkg.sh $VCPKG_ROOT $VCPKG_VERSION
+
+      - name: Add Vcpkg to PATH
+        shell: bash
+        run: echo ${VCPKG_ROOT} >> $GITHUB_PATH
+
+      # workaround for https://github.com/apache/arrow/pull/11569#issuecomment-979592053
+      - name: Install OpenSSL
+        run: vcpkg install openssl
+
+      - name: Install Packages
+        run: |
+          vcpkg install \
+            --clean-after-build \
+            --x-install-root=${VCPKG_ROOT}/installed \
+            --x-manifest-root=arrow/ci/vcpkg \
+            --x-feature=flight \
+            --x-feature=gcs \
+            --x-feature=json \
+            --x-feature=parquet
+
+      - name: Install Python 3.7
+        shell: bash
+        run: sudo arrow/ci/scripts/install_python.sh macos 3.7
+
+      - name: Build Wheel
+        shell: bash
+        run: |
+          $PYTHON -m venv build-env
+          source build-env/bin/activate
+          pip install --upgrade pip wheel
+          arrow/ci/scripts/python_wheel_macos_build.sh x86_64 $(pwd)/arrow $(pwd)/build
+
+      - name: Test Wheel
+        shell: bash
+        run: |
+          $PYTHON -m venv test-env
+          source test-env/bin/activate
+          pip install --upgrade pip wheel
+          arrow/ci/scripts/python_wheel_unix_test.sh $(pwd)/arrow
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Setup Crossbow
+        shell: bash
+        run: pip install -e arrow/dev/archery[crossbow-upload]
+      - name: Upload artifacts
+        shell: bash
+        run: |
+          archery crossbow \
+          --queue-path $(pwd) \
+          --queue-remote https://github.com/ursacomputing/crossbow \
+          upload-artifacts \
+          --sha nightly-packaging-2022-05-10-0-github-wheel-macos-high-sierra-cp37-amd64 \
+          --tag nightly-packaging-2022-05-10-0-github-wheel-macos-high-sierra-cp37-amd64 \
+          "arrow/python/repaired_wheels/*.whl"
+        env:
+          CROSSBOW_GITHUB_TOKEN: ${{ secrets.CROSSBOW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Upload package to Gemfury
+        shell: bash
+        run: |
+          path=$(ls arrow/python/repaired_wheels/*.whl)
+          curl -F "package=@${path}" https://${CROSSBOW_GEMFURY_TOKEN}@push.fury.io/${CROSSBOW_GEMFURY_ORG}/
+        env:
+          CROSSBOW_GEMFURY_TOKEN: ${{ secrets.CROSSBOW_GEMFURY_TOKEN }}
+          CROSSBOW_GEMFURY_ORG: ${{ secrets.CROSSBOW_GEMFURY_ORG }}
