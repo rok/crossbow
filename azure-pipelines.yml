@@ -1,0 +1,103 @@
+
+jobs:
+- job: win
+  pool:
+    vmImage: windows-2019
+  timeoutInMinutes: 360
+  variables:
+    CONFIG: win_64_cuda_compiler_versionNonenumpy1.19python3.9.____cpython
+    R_CONFIG: 
+    ARROW_VERSION: 9.0.0.dev51
+    CONDA_BLD_PATH: D:\\bld\\
+    UPLOAD_PACKAGES: False
+
+  steps:
+    - script: |
+        choco install vcpython27 -fdv -y --debug
+      condition: contains(variables['CONFIG'], 'vs2008')
+      displayName: Install vcpython27.msi (if needed)
+
+    - powershell: |
+        Set-PSDebug -Trace 1
+        $batchcontent = @"
+        ECHO ON
+        SET vcpython=C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0
+        DIR "%vcpython%"
+        CALL "%vcpython%\vcvarsall.bat" %*
+        "@
+        $batchDir = "C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0\VC"
+        $batchPath = "$batchDir" + "\vcvarsall.bat"
+        New-Item -Path $batchPath -ItemType "file" -Force
+        Set-Content -Value $batchcontent -Path $batchPath
+        Get-ChildItem -Path $batchDir
+        Get-ChildItem -Path ($batchDir + '\..')
+      condition: contains(variables['CONFIG'], 'vs2008')
+      displayName: Patch vs2008 (if needed)
+
+    - task: CondaEnvironment@1
+      inputs:
+        packageSpecs: 'python=3.9 conda-build conda "conda-forge-ci-setup=3" pip boa' # Optional
+        installOptions: "-c conda-forge"
+        updateConda: true
+      displayName: Install conda-build and activate environment
+
+    - script: set PYTHONUNBUFFERED=1
+      displayName: Set PYTHONUNBUFFERED
+
+    - script: |
+        git clone --no-checkout --branch cpp-target-include-path https://github.com/kou/arrow.git arrow
+        git -C arrow checkout e643481c9014b8aaa08ff937ba79b35ff277c660
+        git -C arrow submodule update --init --recursive
+      displayName: Clone arrow
+
+
+    # Configure the VM
+    - script: |
+        call activate base
+        setup_conda_rc .\ .\ .\.ci_support\%CONFIG%.yaml
+      workingDirectory: arrow\dev\tasks\conda-recipes
+
+    # Configure the VM.
+    - script: |
+        set "CI=azure"
+        call activate base
+        run_conda_forge_build_setup
+      displayName: conda-forge build setup
+      workingDirectory: arrow\dev\tasks\conda-recipes
+
+    - script: |
+        call activate base
+        conda.exe mambabuild arrow-cpp parquet-cpp -m .ci_support\%CONFIG%.yaml
+      displayName: Build recipe
+      workingDirectory: arrow\dev\tasks\conda-recipes
+      env:
+        PYTHONUNBUFFERED: 1
+      condition: not(contains(variables['CONFIG'], 'vs2008'))
+
+    - script: |
+        call activate base
+        conda.exe mambabuild r-arrow -m .ci_support\r\%R_CONFIG%.yaml
+      displayName: Build recipe
+      workingDirectory: arrow\dev\tasks\conda-recipes
+      env:
+        PYTHONUNBUFFERED: 1
+      condition: contains(variables['R_CONFIG'], 'win')
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.8'
+    - script: pip install -e arrow/dev/archery[crossbow-upload]
+      displayName: Install Crossbow
+    - bash: |
+        archery crossbow \
+          --queue-path $(pwd) \
+          --queue-remote https://github.com/ursacomputing/crossbow \
+          upload-artifacts \
+          --sha actions-2061-azure-conda-win-vs2017-py39 \
+          --tag actions-2061-azure-conda-win-vs2017-py39 \
+          "D:\bld\win-64\*.tar.bz2"
+      env:
+        CROSSBOW_GITHUB_TOKEN: $(CROSSBOW_GITHUB_TOKEN)
+      displayName: Upload packages as a GitHub release
+
+    
