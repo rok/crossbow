@@ -1,7 +1,84 @@
-branches:
-  only:
-    - /.*-travis-.*/
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
+
+arch: arm64-graviton2
+virt: vm
 os: linux
-dist: trusty
-language: generic
+dist: focal
+group: edge
+language: minimal
+
+addons:
+  apt:
+    packages:
+      - libgit2-dev
+      - python3-pip
+
+services:
+  - docker
+
+# don't build twice
+if: tag IS blank
+
+env:
+  global:
+    - BUILD_REF=b538f42c6e1026dbc45cc93d44c981b0e17cd18e
+    - TRAVIS_TAG=actions-2086-travis-wheel-manylinux2014-cp39-arm64
+    # archery uses these environment variables
+    - ARCH=arm64v8
+    - PYTHON="3.9"
+
+before_script:
+  - set -e
+  - git clone --no-checkout --branch bump-thrift https://github.com/nealrichardson/arrow.git arrow
+  - git -C arrow checkout b538f42c6e1026dbc45cc93d44c981b0e17cd18e
+  - git -C arrow submodule update --init --recursive
+
+  - echo "${DOCKERHUB_TOKEN}" | docker login --username "${DOCKERHUB_USER}" --password-stdin
+
+
+script:
+  # Install Archery and Crossbow dependencies
+  - sudo -H pip3 install --upgrade pip
+  - sudo -H pip3 install docker-compose
+  - sudo -H pip3 install -e arrow/dev/archery[docker]
+
+
+  # Build and Test packages
+  # output something every minutes to prevent travis from killing the build
+  - while sleep 1m; do echo "=====[ $SECONDS seconds still running ]====="; done &
+  - archery docker run -e SETUPTOOLS_SCM_PRETEND_VERSION=9.0.0.dev50 python-wheel-manylinux-2014
+  - archery docker run python-wheel-manylinux-test-imports
+  - archery docker run python-wheel-manylinux-test-unittests
+  - kill %1
+
+after_success:
+  # Upload wheel as github artifact
+  - sudo -H pip3 install pygit2==1.0 cryptography==36
+  - sudo -H pip3 install -e arrow/dev/archery[crossbow-upload]
+  - |
+    archery crossbow \
+      --queue-path $(pwd) \
+      --queue-remote https://github.com/ursacomputing/crossbow \
+      upload-artifacts \
+      --sha actions-2086-travis-wheel-manylinux2014-cp39-arm64 \
+      --tag actions-2086-travis-wheel-manylinux2014-cp39-arm64 \
+      "arrow/python/repaired_wheels/*.whl"
+
+  
+
