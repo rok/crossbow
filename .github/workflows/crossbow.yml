@@ -1,0 +1,184 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Prerequisits on the host:
+# - brew install bash bison coreutils ninja cmake
+# - sudo arrow/ci/scripts/install_python.sh macos 3.9
+
+
+# NOTE: must set "Crossbow" as name to have the badge links working in the
+# github comment reports!
+name: Crossbow
+on:
+  push:
+    branches:
+      - "*-github-*"
+
+
+env:
+  ARROW_FLIGHT: OFF
+  ARROW_JEMALLOC: OFF
+  CC: "clang"
+  CMAKE_BUILD_TYPE: release
+  CMAKE_CXX_COMPILER_LAUNCHER: "ccache"
+  CXX: "clang++"
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
+  PYARROW_BUILD_VERBOSE: 1
+  PYARROW_VERSION: "9.0.0.dev38"
+  PYTHON_VERSION: "3.10"
+  PYTHON: "/Library/Frameworks/Python.framework/Versions/3.10/bin/python3.10"
+  VCPKG_FEATURE_FLAGS: "manifests"
+  VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/arrow/ci/vcpkg
+  VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+jobs:
+  build:
+    name: Build wheel for OS X
+    runs-on: self-hosted
+    steps:
+      - name: Cleanup
+        run: rm -rf arrow vcpkg build crossbow-env build-*-env test-*-env
+
+      - name: Checkout Arrow
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: apache/arrow
+          ref: d9346927a0cb79c53464c43c9f991907fca63f10
+          submodules: recursive
+
+
+      - name: Add Brew's Bison to PATH
+        run: echo "/opt/homebrew/opt/bison/bin" >> $GITHUB_PATH
+
+      - name: Retrieve VCPKG version from arrow/.env
+        run: |
+          vcpkg_version=$(cat "arrow/.env" | grep "VCPKG" | cut -d "=" -f2 | tr -d '"')
+          echo "VCPKG_VERSION=$vcpkg_version" >> $GITHUB_ENV
+
+      - name: Install Vcpkg
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
+        run: arch -arm64 arrow/ci/scripts/install_vcpkg.sh $VCPKG_ROOT $VCPKG_VERSION
+
+      - name: Add Vcpkg to PATH
+        run: echo ${VCPKG_ROOT} >> $GITHUB_PATH
+
+      - name: Install ARM64 Packages
+        env:
+          VCPKG_DEFAULT_TRIPLET: arm64-osx-static-release
+        run: |
+           arch -arm64 vcpkg install \
+            --clean-after-build \
+            --x-install-root=${VCPKG_ROOT}/installed \
+            --x-manifest-root=arrow/ci/vcpkg \
+            --x-feature=flight \
+            --x-feature=gcs \
+            --x-feature=json \
+            --x-feature=parquet
+
+      - name: Build ARM64 Wheel
+        env:
+          ARROW_SIMD_LEVEL: "DEFAULT"
+          VCPKG_DEFAULT_TRIPLET: arm64-osx-static-release
+        run: |
+          $PYTHON -m venv build-arm64-env
+          source build-arm64-env/bin/activate
+          pip install --upgrade pip wheel
+          arch -arm64 arrow/ci/scripts/python_wheel_macos_build.sh arm64 $(pwd)/arrow $(pwd)/build
+
+      - name: Install AMD64 Packages
+        env:
+          VCPKG_DEFAULT_TRIPLET: amd64-osx-static-release
+        run: |
+           arch -arm64 vcpkg install \
+            --clean-after-build \
+            --x-install-root=${VCPKG_ROOT}/installed \
+            --x-manifest-root=arrow/ci/vcpkg \
+            --x-feature=flight \
+            --x-feature=gcs \
+            --x-feature=json \
+            --x-feature=parquet
+
+      - name: Build AMD64 Wheel
+        env:
+          ARROW_SIMD_LEVEL: "NONE"
+          VCPKG_DEFAULT_TRIPLET: amd64-osx-static-release
+        run: |
+          $PYTHON -m venv build-amd64-env
+          source build-amd64-env/bin/activate
+          pip install --upgrade pip wheel
+          arch -x86_64 arrow/ci/scripts/python_wheel_macos_build.sh x86_64 $(pwd)/arrow $(pwd)/build
+
+      - name: Fuse AMD64 and ARM64 wheels
+        run: |
+          source build-amd64-env/bin/activate
+          pip install delocate
+
+          amd64_wheel=$(ls arrow/python/repaired_wheels/pyarrow*x86_64.whl)
+          arm64_wheel=$(ls arrow/python/repaired_wheels/pyarrow*arm64.whl)
+          echo "Fusing ${amd64_wheel} and ${arm64_wheel} into an universal2 wheel..."
+          delocate-fuse $amd64_wheel $arm64_wheel -w .
+
+          fused_wheel=$(ls *x86_64.whl)
+          rm arrow/python/repaired_wheels/*.whl
+          mv $fused_wheel arrow/python/repaired_wheels/${fused_wheel/x86_64/universal2}
+
+      - name: Test Wheel on ARM64
+        shell: bash
+        env:
+          PYTEST_ADDOPTS: "-k 'not test_cancellation'"
+        run: |
+          $PYTHON -m venv test-arm64-env
+          source test-arm64-env/bin/activate
+          pip install --upgrade pip wheel
+          arch -arm64 arrow/ci/scripts/python_wheel_unix_test.sh $(pwd)/arrow
+
+      - name: Test Wheel on AMD64
+        shell: bash
+        env:
+          PYTEST_ADDOPTS: "-k 'not test_cancellation'"
+        run: |
+          $PYTHON -m venv test-amd64-env
+          source test-amd64-env/bin/activate
+          pip install --upgrade pip wheel
+          arch -x86_64 arrow/ci/scripts/python_wheel_unix_test.sh $(pwd)/arrow
+
+      - name: Upload artifacts
+        shell: bash
+        run: |
+          $PYTHON -m venv crossbow-env
+          source crossbow-env/bin/activate
+          arch -x86_64 pip install -e arrow/dev/archery[crossbow-upload]
+          arch -x86_64 archery crossbow \
+          --queue-path $(pwd) \
+          --queue-remote https://github.com/ursacomputing/crossbow \
+          upload-artifacts \
+          --sha nightly-packaging-2022-05-13-0-github-wheel-macos-big-sur-cp310-universal2 \
+          --tag nightly-packaging-2022-05-13-0-github-wheel-macos-big-sur-cp310-universal2 \
+          "arrow/python/repaired_wheels/*.whl"
+        env:
+          CROSSBOW_GITHUB_TOKEN: ${{ secrets.CROSSBOW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Upload package to Gemfury
+        shell: bash
+        run: |
+          path=$(ls arrow/python/repaired_wheels/*.whl)
+          curl -F "package=@${path}" https://${CROSSBOW_GEMFURY_TOKEN}@push.fury.io/${CROSSBOW_GEMFURY_ORG}/
+        env:
+          CROSSBOW_GEMFURY_TOKEN: ${{ secrets.CROSSBOW_GEMFURY_TOKEN }}
+          CROSSBOW_GEMFURY_ORG: ${{ secrets.CROSSBOW_GEMFURY_ORG }}
