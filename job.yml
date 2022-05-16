@@ -1,0 +1,182 @@
+!Job
+target: !Target
+  head: 7ec278b069ddd6ef3a8812785f4a990c00f21915
+  email: unknown
+  branch: ARROW-16507-fix-gtest2
+  remote: https://github.com/assignUser/arrow.git
+  github_repo: assignUser/arrow
+  version: 9.0.0.dev75
+  no_rc_version: 9.0.0.dev75
+  no_rc_semver_version: 9.0.0-dev75
+tasks:
+  test-fedora-35-cpp: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        FEDORA: 35
+      image: fedora-cpp
+
+    branch: actions-2093-github-test-fedora-35-cpp
+    commit: 351dc684a7cbc49a8c2ba6568621f16d0640cac3
+  test-debian-11-cpp-i386: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: i386
+        DEBIAN: '11'
+      flags: -e ARROW_S3=OFF -e ARROW_GANDIVA=OFF
+      image: debian-cpp
+
+    branch: actions-2093-github-test-debian-11-cpp-i386
+    commit: 9e298614aabafdc84c52f931a48cef65014f7c8c
+  verify-rc-source-cpp-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: cpp
+      distro: almalinux
+    branch: actions-2093-github-verify-rc-source-cpp-linux-almalinux-8-amd64
+    commit: 89d71ab82f0f32697b15f8fc74f94d7fd8b26489
+  test-ubuntu-22.04-cpp: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      image: ubuntu-cpp
+
+    branch: actions-2093-github-test-ubuntu-22.04-cpp
+    commit: aff869644b4d4693987b789db9be69235307d079
+  verify-rc-source-integration-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: integration
+      distro: ubuntu
+    branch: actions-2093-github-verify-rc-source-integration-linux-ubuntu-20.04-amd64
+    commit: 88f1bc30d61528b8d97adc7a2cbb1fb1fe908d6c
+  test-debian-10-cpp-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: amd64
+        DEBIAN: '10'
+      image: debian-cpp
+
+    branch: actions-2093-github-test-debian-10-cpp-amd64
+    commit: 92c4f41f2e6ce880ec9545280f498e19c5a44a13
+  verify-rc-source-cpp-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: cpp
+      distro: ubuntu
+    branch: actions-2093-github-verify-rc-source-cpp-linux-ubuntu-22.04-amd64
+    commit: 6f58de00339e6147d8bcb94e8f393f1b69e1c66e
+  verify-rc-source-cpp-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: cpp
+      distro: ubuntu
+    branch: actions-2093-github-verify-rc-source-cpp-linux-ubuntu-20.04-amd64
+    commit: f0398796c894556259cd734dd9d9eeb0a6d505f6
+  verify-rc-source-integration-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: integration
+      distro: ubuntu
+    branch: actions-2093-github-verify-rc-source-integration-linux-ubuntu-18.04-amd64
+    commit: f2a7da4e7fdf5da23183f787d9beb33d8d85d027
+  test-debian-10-cpp-i386: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: i386
+        DEBIAN: '10'
+      flags: -e ARROW_S3=OFF -e ARROW_GANDIVA=OFF
+      image: debian-cpp
+    branch: actions-2093-github-test-debian-10-cpp-i386
+    commit: 0903668d5acb9fbed364f29da18f29a5f354cad7
+  test-ubuntu-20.04-cpp-bundled: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 20.04
+      image: ubuntu-cpp-bundled
+
+    branch: actions-2093-github-test-ubuntu-20.04-cpp-bundled
+    commit: 9e469ed19fc2fa623521ac9e764d80351a22160a
+  verify-rc-source-integration-macos-conda-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: integration
+      use_conda: true
+      github_runner: macos-10.15
+    branch: actions-2093-github-verify-rc-source-integration-macos-conda-amd64
+    commit: 19574700d670371cc5808aba39bdd409b69c6ac3
+  verify-rc-source-cpp-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: cpp
+      distro: ubuntu
+    branch: actions-2093-github-verify-rc-source-cpp-linux-ubuntu-18.04-amd64
+    commit: 05ffa06fc733694993b94235485bbf9c3575c6b6
+  verify-rc-source-integration-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: integration
+      distro: ubuntu
+    branch: actions-2093-github-verify-rc-source-integration-linux-ubuntu-22.04-amd64
+    commit: ead5753b9161feb14def11171f0f13b385c412f0
+  test-debian-11-cpp-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: amd64
+        DEBIAN: '11'
+      image: debian-cpp
+
+    branch: actions-2093-github-test-debian-11-cpp-amd64
+    commit: 759ff72ea2c78bd8150d253e12bddff92ff07cc6
+params: {}
+branch: actions-2093
