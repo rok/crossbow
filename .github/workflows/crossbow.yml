@@ -27,7 +27,7 @@ jobs:
           submodules: recursive
 
       - name: Modify version
-        shell: arch -arch arm64 bash
+        shell: arch -arch arm64 bash {0}
         run: |
           cd arrow/r
           # TODO use a more robust solution 20220513
@@ -79,7 +79,7 @@ jobs:
           library(arrow)
           read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
       - name: Upload package
-        shell: bash
+        shell: bash 
         env:
           USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
           PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
