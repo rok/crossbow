@@ -17,91 +17,96 @@ jobs:
           - { rtools: 40, r: "4.1" }
           - { rtools: 42, r: "4.2" }
     steps:
-      - name: Checkout Arrow
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-          path: arrow
-          repository: assignUser/arrow
-          ref: 9dd5b2d6da7f475f48c4ef9f8e7552213ebca1b1
-          submodules: recursive
-
-      - name: Modify version
-        shell: arch -arch arm64 bash {0}
-        run: |
-          cd arrow/r
-          # TODO use a more robust solution 20220513
-          sed -i.bak -E -e \
-            's/(^Version: [0-9]+\.[0-9]+\.[0-9]+).*$/\1.'"$(date -d yesterday +%Y%m%d)"'/' \
-            DESCRIPTION
-          head DESCRIPTION
-          rm -f DESCRIPTION.bak
-          cp ../dev/tasks/homebrew-formulae/autobrew/apache-arrow.rb tools/apache-arrow.rb
-          
-          # Pin the git commit in the formula to match
-          #cd tools
-          #sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"9dd5b2d6da7f475f48c4ef9f8e7552213ebca1b1"'"/' apache-arrow.rb
-          #rm -f apache-arrow.rb.bak
-
-      # - uses: assignUser/actions/setup-r@detect-m1
-      #   with:
-      #     r-version: ${{ matrix.r_version.r }}
-      #     rtools-version: ${{ matrix.r_version.rtools }}
-      #     Ncpus: 2
-      - name: Install Homebrew
-        shell: arch -arch arm64 bash {0}
-        run: |
-          arch -arch arm64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> $GITHUB_PATH
-      - name: Install R
-        shell: arch -arch arm64 bash {0}
-        run: |
-          curl -O https://cloud.r-project.org/bin/macosx/big-sur-arm64/base/R-${{ matrix.r}}.0-arm64.pkg
-          sudo installer -pkg R-4.2.0-arm64.pkg -target /
-
-      - name: Build Binary
+      - name: test R
         shell: arch -arch arm64 Rscript {0}
         run: |
-          on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
+          print( R.Version()$platform)
+          print(grepl("arm-apple|aarch64.*darwin", R.Version()$platform))
+      # - name: Checkout Arrow
+      #   uses: actions/checkout@v2
+      #   with:
+      #     fetch-depth: 1
+      #     path: arrow
+      #     repository: assignUser/arrow
+      #     ref: 9dd5b2d6da7f475f48c4ef9f8e7552213ebca1b1
+      #     submodules: recursive
 
-          # Install dependencies by installing (yesterday's) binary, then removing it
-          install.packages(c("arrow", "cpp11"),
-            type = "binary",
-            # TODO replace with https://nightly.wujciak.de/r
-            repos = c("https://arrow-r-nightly.s3.amazonaws.com", "https://cloud.r-project.org")
-          )
-          remove.packages("arrow")
-
-          # Build
-          Sys.setenv(MAKEFLAGS = paste0("-j", parallel::detectCores()))
-          INSTALL_opts <- "--build"
-          if (!on_windows) {
-            # Windows doesn't support the --strip arg
-            INSTALL_opts <- c(INSTALL_opts, "--strip")
-          }
-          install.packages(
-            "arrow",
-            type = "source",
-            repos = "https://nightly.wujciak.de/r",
-            INSTALL_opts = INSTALL_opts
-          )
-
-          # Test
-          library(arrow)
-          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
-      - name: Upload package
-        shell: bash 
-        env:
-          USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
-          PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
+      # - name: Modify version
+      #   shell: arch -arch arm64 bash {0}
+      #   run: |
+      #     cd arrow/r
+      #     # TODO use a more robust solution 20220513
+      #     sed -i.bak -E -e \
+      #       's/(^Version: [0-9]+\.[0-9]+\.[0-9]+).*$/\1.'"$(date -d yesterday +%Y%m%d)"'/' \
+      #       DESCRIPTION
+      #     head DESCRIPTION
+      #     rm -f DESCRIPTION.bak
+      #     cp ../dev/tasks/homebrew-formulae/autobrew/apache-arrow.rb tools/apache-arrow.rb
           
-        run: |
-          VERSION=$(grep ^Version arrow/r/DESCRIPTION | sed s/Version:\ //)
-          REPO_PATH=r$(Rscript -e "cat(contrib.url('', type = 'binary'))")
-          echo $REPO_PATH
-          #curl -s --fail --show-error -u $USER:$PW -T arrow_$VERSION.* https://nightly.wujciak.de:8080/$REPO_PATH/
-      - name: Upload binary artifact (temp)
-        uses: actions/upload-artifact@v3
-        with:
-          name: r-${{ matrix.config.os}}-pkg
-          path: arrow_*.zip 
+      #     # Pin the git commit in the formula to match
+      #     #cd tools
+      #     #sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"9dd5b2d6da7f475f48c4ef9f8e7552213ebca1b1"'"/' apache-arrow.rb
+      #     #rm -f apache-arrow.rb.bak
+
+      # # - uses: assignUser/actions/setup-r@detect-m1
+      # #   with:
+      # #     r-version: ${{ matrix.r_version.r }}
+      # #     rtools-version: ${{ matrix.r_version.rtools }}
+      # #     Ncpus: 2
+      # - name: Install Homebrew
+      #   shell: arch -arch arm64 bash {0}
+      #   run: |
+      #     arch -arch arm64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      #     echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> $GITHUB_PATH
+      # - name: Install R
+      #   shell: arch -arch arm64 bash {0}
+      #   run: |
+      #     curl -O https://cloud.r-project.org/bin/macosx/big-sur-arm64/base/R-${{ matrix.r}}.0-arm64.pkg
+      #     sudo installer -pkg R-4.2.0-arm64.pkg -target /
+
+      # - name: Build Binary
+      #   shell: arch -arch arm64 Rscript {0}
+      #   run: |
+      #     on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
+
+      #     # Install dependencies by installing (yesterday's) binary, then removing it
+      #     install.packages(c("arrow", "cpp11"),
+      #       type = "binary",
+      #       # TODO replace with https://nightly.wujciak.de/r
+      #       repos = c("https://arrow-r-nightly.s3.amazonaws.com", "https://cloud.r-project.org")
+      #     )
+      #     remove.packages("arrow")
+
+      #     # Build
+      #     Sys.setenv(MAKEFLAGS = paste0("-j", parallel::detectCores()))
+      #     INSTALL_opts <- "--build"
+      #     if (!on_windows) {
+      #       # Windows doesn't support the --strip arg
+      #       INSTALL_opts <- c(INSTALL_opts, "--strip")
+      #     }
+      #     install.packages(
+      #       "arrow",
+      #       type = "source",
+      #       repos = "https://nightly.wujciak.de/r",
+      #       INSTALL_opts = INSTALL_opts
+      #     )
+
+      #     # Test
+      #     library(arrow)
+      #     read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+      # - name: Upload package
+      #   shell: bash 
+      #   env:
+      #     USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
+      #     PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
+          
+      #   run: |
+      #     VERSION=$(grep ^Version arrow/r/DESCRIPTION | sed s/Version:\ //)
+      #     REPO_PATH=r$(Rscript -e "cat(contrib.url('', type = 'binary'))")
+      #     echo $REPO_PATH
+      #     #curl -s --fail --show-error -u $USER:$PW -T arrow_$VERSION.* https://nightly.wujciak.de:8080/$REPO_PATH/
+      # - name: Upload binary artifact (temp)
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: r-${{ matrix.config.os}}-pkg
+      #     path: arrow_*.zip 
