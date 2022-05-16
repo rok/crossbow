@@ -31,46 +31,48 @@ jobs:
       - name: Build Binary
         shell: arch -arch arm64 Rscript {0}
         run: |
-          on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
+          print(contrib.url("", type = "binary"))
+          print(contrib.url("", type = "mac.binary"))
+          # on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
 
-          # Install dependencies by installing (yesterday's) binary, then removing it
-          install.packages(c("arrow", "cpp11"),
-            type = "binary",
-            # TODO replace with https://nightly.wujciak.de/r
-            repos = c("https://arrow-r-nightly.s3.amazonaws.com", "https://cloud.r-project.org")
-          )
-          remove.packages("arrow")
+          # # Install dependencies by installing (yesterday's) binary, then removing it
+          # install.packages(c("arrow", "cpp11"),
+          #   type = "binary",
+          #   # TODO replace with https://nightly.wujciak.de/r
+          #   repos = c("https://arrow-r-nightly.s3.amazonaws.com", "https://cloud.r-project.org")
+          # )
+          # remove.packages("arrow")
 
-          # Build
-          Sys.setenv(MAKEFLAGS = paste0("-j", parallel::detectCores()))
-          INSTALL_opts <- "--build"
-          if (!on_windows) {
-            # Windows doesn't support the --strip arg
-            INSTALL_opts <- c(INSTALL_opts, "--strip")
-          }
-          install.packages(
-            "arrow",
-            type = "source",
-            repos = "https://nightly.wujciak.de/r",
-            INSTALL_opts = INSTALL_opts
-          )
+          # # Build
+          # Sys.setenv(MAKEFLAGS = paste0("-j", parallel::detectCores()))
+          # INSTALL_opts <- "--build"
+          # if (!on_windows) {
+          #   # Windows doesn't support the --strip arg
+          #   INSTALL_opts <- c(INSTALL_opts, "--strip")
+          # }
+          # install.packages(
+          #   "arrow",
+          #   type = "source",
+          #   repos = "https://nightly.wujciak.de/r",
+          #   INSTALL_opts = INSTALL_opts
+          # )
 
-          # Test
-          library(arrow)
-          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
-      - name: Upload package
-        shell: arch -arch arm64 bash {0} 
-        env:
-          USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
-          PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
+          # # Test
+          # library(arrow)
+          # read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+      # - name: Upload package
+      #   shell: arch -arch arm64 bash {0} 
+      #   env:
+      #     USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
+      #     PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
           
-        run: |
-          VERSION=$(grep ^Version arrow/r/DESCRIPTION | sed s/Version:\ //)
-          REPO_PATH=r$(arch -arch arm64 Rscript -e "cat(contrib.url('', type = 'binary'))")
-          echo $REPO_PATH
-          #curl -s --fail --show-error -u $USER:$PW -T arrow_$VERSION.* https://nightly.wujciak.de:8080/$REPO_PATH/
-      - name: Upload binary artifact (temp)
-        uses: actions/upload-artifact@v3
-        with:
-          name: r-${{ matrix.config.os}}-pkg
-          path: arrow_*.zip 
+      #   run: |
+      #     VERSION=$(grep ^Version arrow/r/DESCRIPTION | sed s/Version:\ //)
+      #     REPO_PATH=r$(arch -arch arm64 Rscript -e "cat(contrib.url('', type = 'binary'))")
+      #     echo $REPO_PATH
+      #     #curl -s --fail --show-error -u $USER:$PW -T arrow_$VERSION.* https://nightly.wujciak.de:8080/$REPO_PATH/
+      # - name: Upload binary artifact (temp)
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: r-${{ matrix.config.os}}-pkg
+      #     path: arrow_*.zip 
