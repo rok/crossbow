@@ -43,11 +43,17 @@ jobs:
           #sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"9dd5b2d6da7f475f48c4ef9f8e7552213ebca1b1"'"/' apache-arrow.rb
           #rm -f apache-arrow.rb.bak
 
-      - uses: assignUser/actions/setup-r@detect-m1
-        with:
-          r-version: ${{ matrix.r_version.r }}
-          rtools-version: ${{ matrix.r_version.rtools }}
-          Ncpus: 2
+      # - uses: assignUser/actions/setup-r@detect-m1
+      #   with:
+      #     r-version: ${{ matrix.r_version.r }}
+      #     rtools-version: ${{ matrix.r_version.rtools }}
+      #     Ncpus: 2
+      - name: Install R
+        shell: arch -arch arm64 bash {0}
+        run: |
+          wget https://cloud.r-project.org/bin/macosx/big-sur-arm64/base/R-4.2.0-arm64.pkg
+          sudo installer -pkg R-4.2.0-arm64.pkg -target /
+
       - name: Build Binary
         shell: arch -arch arm64 Rscript {0}
         run: |
