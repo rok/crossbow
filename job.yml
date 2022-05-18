@@ -1,0 +1,45 @@
+!Job
+target: !Target
+  head: 39bcec3b3f14fd53618adb4a95003211aca446c2
+  email: unknown
+  branch: fix-wrong-dataset-mark-definition
+  remote: https://github.com/raulcd/arrow.git
+  github_repo: raulcd/arrow
+  version: 9.0.0.dev69
+  no_rc_version: 9.0.0.dev69
+  no_rc_semver_version: 9.0.0-dev69
+tasks:
+  test-conda-python-3.8-pandas-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.8'
+        PANDAS: latest
+        NUMPY: latest
+        # ensure we have at least one build with parquet encryption disabled
+        PARQUET_REQUIRE_ENCRYPTION: OFF
+      # use the latest pandas release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-pandas
+    branch: actions-2112-github-test-conda-python-3.8-pandas-latest
+    commit: 9b140f28280965c6b380bbe810a3e2ae867e5107
+  test-conda-python-3.7-pandas-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.7'
+        PANDAS: latest
+        NUMPY: latest
+        # ensure we have at least one build with parquet encryption disabled
+        PARQUET_REQUIRE_ENCRYPTION: OFF
+      # use the latest pandas release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-pandas
+    branch: actions-2112-github-test-conda-python-3.7-pandas-latest
+    commit: c61b55846a461d581970312cd5f083acabb2235e
+params: {}
+branch: actions-2112
