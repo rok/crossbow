@@ -14,7 +14,7 @@ jobs:
         platform:
           - devops-managed
         r_version:
-          - { rtools: 40, r: "4.1" }
+          #- { rtools: 40, r: "4.1" }
           - { rtools: 42, r: "4.2" }
     steps:
       - name: Install Homebrew
@@ -33,9 +33,12 @@ jobs:
       - run: echo $PATH
       - name: Build Binary
         env:
-          #NOT_CRAN: true
+          NOT_CRAN: true
           ARROW_R_DEV: true
+          _R_CHECK_CRAN_INCOMING_: false
+          ARROW_USE_PKG_CONFIG: false
           FORCE_BUNDLED_BUILD: true
+          LIBARROW_MINIMAL: false
         shell: arch -arch arm64 /opt/homebrew/bin/Rscript {0}
         run: |
           
@@ -78,9 +81,43 @@ jobs:
         run: |
           REPO_PATH=r$(arch -arch arm64 /opt/homebrew/bin/Rscript -e "cat(contrib.url('', type = 'mac.binary.big-sur-arm64'))")
           echo $REPO_PATH
-          #curl -s --fail --show-error -u $USER:$PW -T arrow_8.0.0.*.* https://nightly.wujciak.de:8080/$REPO_PATH/
+          #curl -s --fail --show-error -u $USER:$PW -T arrow_8.0.0.* https://nightly.wujciak.de:8080/$REPO_PATH/
       - name: Upload binary artifact (temp)
         uses: actions/upload-artifact@v3
         with:
           name: r-arm64-${{ matrix.config.r}}-pkg
           path: arrow_*
+  update-repo:
+    needs: r-packages
+    name: Update PACKAGES
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          install-r: false
+
+      - name: Install davfs2 & Mount Repo
+        run: | 
+          sudo apt update && sudo apt install davfs2
+          mkdir nightly
+          sudo bash -c 'echo "https://nightly.wujciak.de:8080 ${{ secrets.CROSSBOW_NIGHTLIES_USER }} ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}" >> /etc/davfs2/secrets'
+          sudo mount -t davfs https://nightly.wujciak.de:8080 nightly -o rw
+
+      - name: Update Repo
+        shell: sudo Rscript {0}
+        run: |
+          bin_dirs <- paste0("nightly/r/bin/", dir("nightly/r/bin", recursive = TRUE, include.dirs = TRUE, pattern = "\\d\\.\\d"))
+
+          for(dir in bin_dirs) {
+            win_bin <- grepl("windows", dir)
+
+            if(file.exists(paste0(dir,"/PACKAGES"))) {
+              tools::update_PACKAGES(dir , type = ifelse(win_bin, "win.binary", "mac.binary"), latestOnly = FALSE)
+            } else {
+              tools::write_PACKAGES(dir , type = ifelse(win_bin, "win.binary", "mac.binary"), latestOnly = FALSE)
+            }
+
+          }
+
+      - run: sudo umount nightly
