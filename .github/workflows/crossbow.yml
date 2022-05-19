@@ -69,11 +69,11 @@ jobs:
           # Test
           library(arrow)
           read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
-      # - name: Upload package
-      #   shell: arch -arch arm64 bash {0} 
-      #   env:
-      #     USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
-      #     PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
+      - name: Upload package
+        shell: arch -arch arm64 bash {0} 
+        env:
+          USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
+          PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
           
         run: |
           REPO_PATH=r$(arch -arch arm64 /opt/homebrew/bin/Rscript -e "cat(contrib.url('', type = 'mac.binary.big-sur-arm64'))")
