@@ -20,7 +20,7 @@ jobs:
       - name: Install Homebrew
         shell: arch -arch arm64 bash {0}
         run: |
-          arch -arch arm64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          # arch -arch arm64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           echo $(eval $(/opt/homebrew/bin/brew shellenv)) >> $GITHUB_PATH
       - name: Install R
         shell: arch -arch arm64 bash {0}
@@ -33,16 +33,19 @@ jobs:
       - name: Build Binary
         shell: /opt/homebrew/bin/Rscript {0}
         run: |
-          contrib.url("", type="binary")
-          print(.Platform)
+          
+          .Platform$pkgType <- "mac.binary.big-sur-arm64"
+          print(contrib.url("", type="binary"))
+
           on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
 
-          # # Install dependencies by installing (yesterday's) binary, then removing it
-          # install.packages(c("arrow", "cpp11"),
-          #   # TODO replace with https://nightly.wujciak.de/r
-          #   repos = c("https://arrow-r-nightly.s3.amazonaws.com", "https://cloud.r-project.org")
-          # )
-          # remove.packages("arrow")
+          # Install dependencies by installing (yesterday's) binary, then removing it
+          install.packages(c("arrow", "cpp11"),
+            # TODO replace with https://nightly.wujciak.de/r
+            type = "binary",
+            repos = c("https://arrow-r-nightly.s3.amazonaws.com", "https://cloud.r-project.org")
+          )
+          remove.packages("arrow")
 
           # Build
           Sys.setenv(MAKEFLAGS = paste0("-j", parallel::detectCores()))
