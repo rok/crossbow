@@ -25,7 +25,7 @@ jobs:
       - name: Install R
         shell: arch -arch arm64 bash {0}
         run: |
-          brew install r
+          brew install r openssl
           echo "$(brew --prefix node@16)/bin" >> $GITHUB_PATH
           echo "$(brew --prefix ruby)/bin" >> $GITHUB_PATH
           echo "PKG_CONFIG_PATH=$(brew --prefix ruby)/lib/pkgconfig" >> $GITHUB_ENV
@@ -34,7 +34,7 @@ jobs:
         env:
           NOT_CRAN: true
           FORCE_BUNDLED_BUILD: true
-        shell: arch -arch arm64 /opt/homebrew/bin/Rscript {0}
+        shell: arch -arch arm64 sudo /opt/homebrew/bin/Rscript {0}
         run: |
           
           .Platform$pkgType <- "mac.binary.big-sur-arm64"
