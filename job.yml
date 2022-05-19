@@ -1,0 +1,35 @@
+!Job
+target: !Target
+  head: f3a5c73d588bd696bddf7ec1db7d1aa61c834f93
+  email: unknown
+  branch: cpp-cmake-lz4
+  remote: https://github.com/kou/arrow.git
+  github_repo: kou/arrow
+  version: 9.0.0.dev80
+  no_rc_version: 9.0.0.dev80
+  no_rc_semver_version: 9.0.0-dev80
+tasks:
+  conan-maximum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: >-
+        -e ARROW_CONAN_WITH_LZ4=True
+      image: conan
+
+  ############################## Conda Linux ############################
+
+    branch: actions-2116-github-conan-maximum
+    commit: bcba3d7a31ca5d4cc9e934bc3cf8fa5e19da2fbb
+  conan-minimum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      image: conan
+
+    branch: actions-2116-github-conan-minimum
+    commit: 82e5a36aad39c7f2f2d064c99f55eb282005c854
+params: {}
+branch: actions-2116
