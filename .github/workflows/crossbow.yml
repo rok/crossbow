@@ -33,11 +33,11 @@ jobs:
       - name: Build Binary
         shell: arch -arch arm64 Rscript {0}
         run: |
+          print(.Platform)
           on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
 
           # Install dependencies by installing (yesterday's) binary, then removing it
           install.packages(c("arrow", "cpp11"),
-            type = "binary",
             # TODO replace with https://nightly.wujciak.de/r
             repos = c("https://arrow-r-nightly.s3.amazonaws.com", "https://cloud.r-project.org")
           )
