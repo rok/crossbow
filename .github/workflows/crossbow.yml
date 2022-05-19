@@ -35,14 +35,14 @@ jobs:
         run: |
           
           .Platform$pkgType <- "mac.binary.big-sur-arm64"
-          print(contrib.url("", type="binary"))
+          print(contrib.url("", type="mac.binary"))
 
           on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
 
           # Install dependencies by installing (yesterday's) binary, then removing it
           install.packages(c("arrow", "cpp11"),
             # TODO replace with https://nightly.wujciak.de/r
-            type = "binary",
+            type = "mac.binary.big-sur-arm64",
             repos = c("https://arrow-r-nightly.s3.amazonaws.com", "https://cloud.r-project.org")
           )
           remove.packages("arrow")
