@@ -1,0 +1,664 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# root of the R nightly repo where the first dir is the mount point used by davfs2 ("nightly")
+# TODO update with nightlies.apache.org/arrow/r
+# This allows us to set a custom version via param:
+# crossbow submit --param custom_version=8.5.3 r-nightly-packages
+# if the param is unset defaults to the usual Ymd naming scheme
+# We need this as boolean and string
+# use filter to cast to string and convert to lowercase to match yaml boolean
+
+# NOTE: must set "Crossbow" as name to have the badge links working in the
+# github comment reports!
+name: Crossbow
+on:
+  push:
+    branches:
+      - "*-github-*"
+
+
+env:
+  # prevent upload of R packages or libarrow binaries via param (e.g. for release)
+  # crossbow submit --param upload_pkg=false --param upload_libarrow=false r-nightly-packages
+  UPLOAD_PKG: env.UPLOAD_PKG && success() && false
+  UPLOAD_LIBARROW: env.UPLOAD_LIBARROW && success() && false
+  
+jobs:
+  source:
+    # This job will change the version to either the custom_version param or YMD format.
+    # The output allows other steps to use the exact version to prevent issues (e.g. date changes during run)
+    name: Source Package
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.save-version.outputs.version }}
+    steps:
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: assignUser/arrow
+          ref: b2abb654beb91cce3493deb1a964989859683903
+          submodules: recursive
+
+      - name: Modify version
+        shell: bash
+        run: |
+          cd arrow/r
+          sed -i.bak -E -e \
+            's/(^Version: )([0-9]+\.[0-9]+\.[0-9]+).*$/\1\2.'"$(date +%Y%m%d)"'/' \
+            DESCRIPTION
+          head DESCRIPTION
+          rm -f DESCRIPTION.bak
+          cp ../dev/tasks/homebrew-formulae/autobrew/apache-arrow.rb tools/apache-arrow.rb
+          
+          # Pin the git commit in the formula to match
+          cd tools
+          sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"b2abb654beb91cce3493deb1a964989859683903"'"/' apache-arrow.rb
+          rm -f apache-arrow.rb.bak
+
+      - name: Save Version
+        id: save-version
+        shell: bash
+        run: | 
+          echo "::set-output name=version::$(grep ^Version arrow/r/DESCRIPTION | sed s/Version:\ //)"
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          install-r: false
+
+      - name: Build R source package
+        shell: bash
+        run: |
+          cd arrow/r
+          # Copy in the Arrow C++ source
+          make sync-cpp
+          R CMD build --no-build-vignettes .
+
+      - name: Install davfs2 & Mount Repository
+        if: env.UPLOAD_PKG && success() && false
+        run: | 
+          sudo apt update && sudo apt install davfs2
+
+          # Create mount point
+          mkdir nightly
+
+          # make credentials available
+          sudo bash -c 'echo "https://nightly.wujciak.de:8080 ${{ secrets.CROSSBOW_NIGHTLIES_USER }} ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}" >> /etc/davfs2/secrets'
+
+          # mount with read&write access
+          sudo mount -t davfs https://nightly.wujciak.de:8080 nightly -o rw
+
+      - name: Upload Source Package
+        if: env.UPLOAD_PKG && success() && false
+        shell: bash
+        run: | 
+          # ensure repo structure is set up, this job is the fastest and should fix any issue before the other jobs try
+          # to push into non existent folder with curl, which would fail silently. 
+          # Add any new architectures or R versions here
+          sudo mkdir -p nightly/r/src/contrib 
+     
+          sudo mkdir -p nightly/r/libarrow/bin/ubuntu-18.04
+     
+          sudo mkdir -p nightly/r/libarrow/bin/centos-7
+     
+          sudo mkdir -p nightly/r/libarrow/bin/windows
+     
+          sudo mkdir -p nightly/r/bin/windows/contrib/4.1
+          sudo mkdir -p nightly/r/bin/windows/contrib/4.2
+     
+          sudo mkdir -p nightly/r/bin/macosx/contrib/4.1
+          sudo mkdir -p nightly/r/bin/macosx/contrib/4.2
+     
+          sudo mkdir -p nightly/r/bin/macosx/big-sur-arm64/contrib/4.1
+          sudo mkdir -p nightly/r/bin/macosx/big-sur-arm64/contrib/4.2
+            sudo cp arrow/r/arrow_*.tar.gz nightly/r/src/contrib
+      - name: Update Repository Index
+        if: env.UPLOAD_PKG && success() && false
+        shell: sudo Rscript {0}
+        run: |
+          if(file.exists("nightly/r/src/contrib/PACKAGES")) {
+            tools::update_PACKAGES("nightly/r/src/contrib" , type = "source", latestOnly = FALSE)
+          } else {
+            tools::write_PACKAGES("nightly/r/src/contrib" , type = "source", latestOnly = FALSE)
+          }
+
+      - name: Unmount Repository
+        # ensures all changes are written
+        if: env.UPLOAD_PKG && success() && false
+        shell: bash
+        run: sudo umount nightly
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: r-src-pkg
+          path: arrow/r/arrow_*.tar.gz
+
+  linux-cpp:
+    name: C++ Binary ${{ matrix.config.os }}-${{ matrix.config.version }}
+    runs-on: ubuntu-latest
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu, version: "18.04" }
+          - { os: centos, version: "7" }
+    env:
+      UBUNTU: ${{ matrix.config.version }}
+    steps:
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: assignUser/arrow
+          ref: b2abb654beb91cce3493deb1a964989859683903
+          submodules: recursive
+
+      - name: Modify version
+        shell: bash
+        run: |
+          cd arrow/r
+          sed -i.bak -E -e \
+            's/(^Version: )([0-9]+\.[0-9]+\.[0-9]+).*$/\1${{ needs.source.outputs.version }}/' \
+            DESCRIPTION
+          head DESCRIPTION
+          rm -f DESCRIPTION.bak
+          cp ../dev/tasks/homebrew-formulae/autobrew/apache-arrow.rb tools/apache-arrow.rb
+          
+          # Pin the git commit in the formula to match
+          cd tools
+          sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"b2abb654beb91cce3493deb1a964989859683903"'"/' apache-arrow.rb
+          rm -f apache-arrow.rb.bak
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          cache: 'pip'
+          python-version: 3.8
+      - name: Install Archery
+        shell: bash
+        run: pip install -e arrow/dev/archery[all]
+
+      - name: Build libarrow
+        shell: bash
+        run: |
+          sudo sysctl -w kernel.core_pattern="core.%e.%p"
+          ulimit -c unlimited
+          archery docker run  ${{ matrix.config.os}}-cpp-static
+      - name: Bundle libarrow
+        shell: bash
+        env:
+          PKG_FILE: arrow-${{ needs.source.outputs.version }}.zip
+          VERSION: ${{ needs.source.outputs.version }}
+        run: |
+          cd arrow/r/libarrow/dist
+          # These files were created by the docker user so we have to sudo to get them
+          sudo -E zip -r $PKG_FILE lib/ include/
+      
+      - name: Upload libarrow
+        if: env.UPLOAD_LIBARROW && success() && false
+        shell: bash
+        env:
+          USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
+          PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
+          PKG_FILE: arrow-${{ needs.source.outputs.version }}.zip
+        run: |
+          cd arrow/r/libarrow/dist
+          export REPO_PATH=r/libarrow/bin/${{ matrix.config.os }}-${{ matrix.config.version }}
+          curl -s --fail --show-error -u $USER:$PW -T $PKG_FILE  https://nightly.wujciak.de:8080/$REPO_PATH/
+          
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: r-${{ matrix.config.os}}-libarrow
+          path: arrow/r/libarrow/dist/arrow-*.zip
+
+  windows-cpp:
+    name: C++ Binary Windows RTools (40 only)
+    needs: source
+    runs-on: windows-latest
+    steps:
+      - run: git config --global core.autocrlf false
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: assignUser/arrow
+          ref: b2abb654beb91cce3493deb1a964989859683903
+          submodules: recursive
+
+      - name: Modify version
+        shell: bash
+        run: |
+          cd arrow/r
+          sed -i.bak -E -e \
+            's/(^Version: )([0-9]+\.[0-9]+\.[0-9]+).*$/\1${{ needs.source.outputs.version }}/' \
+            DESCRIPTION
+          head DESCRIPTION
+          rm -f DESCRIPTION.bak
+          cp ../dev/tasks/homebrew-formulae/autobrew/apache-arrow.rb tools/apache-arrow.rb
+          
+          # Pin the git commit in the formula to match
+          cd tools
+          sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"b2abb654beb91cce3493deb1a964989859683903"'"/' apache-arrow.rb
+          rm -f apache-arrow.rb.bak
+
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          rtools-version: 40
+          r-version: "4.0"
+          Ncpus: 2
+
+      - name: Build Arrow C++ with rtools40
+        shell: bash
+        env:
+          ARROW_HOME: "arrow"
+        run: arrow/ci/scripts/r_windows_build.sh
+
+      - name: Upload Binary
+        if: env.UPLOAD_LIBARROW && success() && false
+        shell: bash
+        env:
+          USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
+          PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
+        run: |
+          VERSION=$(grep ^Version arrow/r/DESCRIPTION | sed s/Version:\ //)
+
+          cd build
+          curl -s --fail --show-error -u $USER:$PW -T arrow-$VERSION.zip  https://nightly.wujciak.de:8080/r/libarrow/bin/windows/
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: r-windows-libarrow
+          path: build/arrow-*.zip 
+
+  r-packages:
+    if: true && !cancelled()
+    needs: [source, windows-cpp]
+    name: ${{ matrix.platform }} ${{ matrix.r_version.r }}
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - windows-latest
+          # This is newer than what CRAN builds on, but Travis is no longer an option for us, so...
+          - macos-10.15
+          # - devops-managed # No M1 until the runner application runs native
+        r_version:
+          - { rtools: 40, r: "4.1" }
+          - { rtools: 42, r: "4.2" }
+    steps:
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r_version.r }}
+          rtools-version: ${{ matrix.r_version.rtools }}
+          Ncpus: 2
+      - name: Setup local repo
+        if: !false
+        shell: bash
+        run: mkdir repo 
+      - name: Get windows binary
+        if: !false && ('matrix.platform' == 'windows-latest')
+        uses: actions/download-artifact@v3
+        with:
+          name: r-windows-libarrow
+          path: repo/libarrow/bin/windows
+      - name: Get ubuntu binary
+        if: !false && ('matrix.platform' != 'windows-latest')
+        uses: actions/download-artifact@v
+        with:
+          name: r-ubuntu-libarrow
+          path: repo/libarrow/bin/ubuntu-18.04
+      - name: Get centos binary
+        if: !false && ('matrix.platform' != 'windows-latest')
+        uses: actions/download-artifact@v
+        with:
+          name: r-centos-libarrow
+          path: repo/libarrow/bin/centos-7
+      - name: Get src pkg
+        if: !false
+        uses: actions/download-artifact@v3
+        with:
+          name: r-src-pkg
+          path: repo/src/contrib
+      - run: ls -R repo
+        if: !false
+
+      - name: Build Binary
+        shell: Rscript {0}
+        run: |
+          on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
+
+          # Install dependencies by installing (yesterday's) binary, then removing it
+          install.packages(c("arrow", "cpp11"),
+            type = "binary",
+            repos = c("https://nightly.wujciak.de/r", "https://cloud.r-project.org")
+          )
+          remove.packages("arrow")
+
+          dev_repo <- "https://nightly.wujciak.de/r"
+
+          # Setup local repo
+          if (TRUE) {
+            tools::write_PACKAGES("repo/src/contrib", type = "source")
+            dev_repo <- "file://${{ github.workspace }}/repo"
+          }
+          options(arrow.dev_repo = dev_repo)
+          
+          # Build
+          Sys.setenv(MAKEFLAGS = paste0("-j", parallel::detectCores()))
+          INSTALL_opts <- "--build"
+          if (!on_windows) {
+            # Windows doesn't support the --strip arg
+            INSTALL_opts <- c(INSTALL_opts, "--strip")
+          }
+
+         
+          install.packages(
+            "arrow",
+            type = "source",
+            repos = dev_repo,
+            INSTALL_opts = INSTALL_opts
+          )
+
+          # Test
+          library(arrow)
+          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+      - name: Upload package
+        if: env.UPLOAD_PKG && success() && false
+        shell: bash
+        env:
+          USER: ${{ secrets.CROSSBOW_NIGHTLIES_USER }}
+          PW: ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}
+          VERSION: ${{ needs.source.outputs.version }}
+        run: |
+          REPO_PATH=r$(Rscript -e "cat(contrib.url('', type = 'binary'))")
+          EXT=$(if [[ ${{ matrix.platform }} == windows* ]]; then echo zip; else echo tgz; fi)
+
+          curl -s --fail --show-error -u $USER:$PW -T arrow_$VERSION.$EXT https://nightly.wujciak.de:8080/$REPO_PATH/
+      - name: Upload binary artifact (temp)
+        uses: actions/upload-artifact@v3
+        with:
+          name: r-${{ matrix.platform }}-R${{ matrix.r_version.r }}-pkg
+          path: arrow_*
+
+  test-linux-binary:
+    if: true && !cancelled()
+    needs: [source, linux-cpp]
+    name: Test binary ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - "rhub/ubuntu-gcc-release" # ubuntu-20.04 (focal)
+          - "rstudio/r-base:4.1-bionic"
+          - "rstudio/r-base:4.2-centos7"
+          - "rocker/r-ver:3.6.3" # for debian:buster (10)
+          - "rocker/r-ver" # ubuntu-20.04
+          - "rhub/fedora-clang-devel" # tests distro-map.csv, mapped t
+    steps:
+      - name: Install system requirements
+        shell: bash
+        run: |
+          if [ "`which dnf`" ]; then
+            dnf install -y libcurl-devel openssl-devel
+          elif [ "`which yum`" ]; then
+            yum install -y libcurl-devel openssl-devel
+          elif [ "`which zypper`" ]; then
+            zypper install -y libcurl-devel libopenssl-devel
+          else
+            apt-get update
+            apt-get install -y libcurl4-openssl-dev libssl-dev
+          fi
+
+          # Add R-devel to PATH
+          echo "/opt/R-devel/bin" >> $GITHUB_PATH
+      - name: Setup local repo
+        if: !false
+        shell: bash
+        run: mkdir repo 
+      - name: Get windows binary
+        if: !false && ('ubuntu-latest' == 'windows-latest')
+        uses: actions/download-artifact@v3
+        with:
+          name: r-windows-libarrow
+          path: repo/libarrow/bin/windows
+      - name: Get ubuntu binary
+        if: !false && ('ubuntu-latest' != 'windows-latest')
+        uses: actions/download-artifact@v
+        with:
+          name: r-ubuntu-libarrow
+          path: repo/libarrow/bin/ubuntu-18.04
+      - name: Get centos binary
+        if: !false && ('ubuntu-latest' != 'windows-latest')
+        uses: actions/download-artifact@v
+        with:
+          name: r-centos-libarrow
+          path: repo/libarrow/bin/centos-7
+      - name: Get src pkg
+        if: !false
+        uses: actions/download-artifact@v3
+        with:
+          name: r-src-pkg
+          path: repo/src/contrib
+      - run: ls -R repo
+        if: !false
+
+      - name: Set dev repo
+        if: !false
+        shell: bash
+        run: |
+          echo 'options(arrow.dev_repo = "file://${{ github.workspace }}/repo")' >> ~/.Rprofile
+      - name: Install arrow from our repo
+        env:
+          LIBARROW_BUILD: "FALSE"
+          LIBARROW_BINARY: "TRUE"
+        shell: Rscript {0}
+        run: |
+          source("https://raw.githubusercontent.com/apache/arrow/master/ci/etc/rprofile")
+          
+          if (TRUE) {
+            tools::write_PACKAGES("repo/src/contrib", type = "source")
+          }
+
+          install.packages(
+            "arrow",
+            repos = c(getOption("arrow.dev_repo"), "https://cloud.r-project.org"),
+            verbose = TRUE
+          )
+          library(arrow)
+          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+
+          # Our Version should always be > CRAN so we would detect a CRAN version here.
+          stopifnot(packageVersion("arrow") == "${{needs.source.outputs.version}}")
+
+
+  test-source:
+    if: true && !cancelled()
+    needs: source
+    name: Test linux source build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          install-r: false
+      - name: Setup local repo
+        if: !false
+        shell: bash
+        run: mkdir repo 
+      - name: Get windows binary
+        if: !false && ('ubuntu-latest' == 'windows-latest')
+        uses: actions/download-artifact@v3
+        with:
+          name: r-windows-libarrow
+          path: repo/libarrow/bin/windows
+      - name: Get ubuntu binary
+        if: !false && ('ubuntu-latest' != 'windows-latest')
+        uses: actions/download-artifact@v
+        with:
+          name: r-ubuntu-libarrow
+          path: repo/libarrow/bin/ubuntu-18.04
+      - name: Get centos binary
+        if: !false && ('ubuntu-latest' != 'windows-latest')
+        uses: actions/download-artifact@v
+        with:
+          name: r-centos-libarrow
+          path: repo/libarrow/bin/centos-7
+      - name: Get src pkg
+        if: !false
+        uses: actions/download-artifact@v3
+        with:
+          name: r-src-pkg
+          path: repo/src/contrib
+      - run: ls -R repo
+        if: !false
+
+      - name: Set dev repo
+        if: !false
+        shell: bash
+        run: |
+          echo 'options(arrow.dev_repo = "file://${{ github.workspace }}/repo")' >> ~/.Rprofile
+      - name: Install arrow from nightly repo
+        env:
+          # Test source build so be sure not to download a binary
+          LIBARROW_BINARY: "FALSE"
+        shell: Rscript {0}
+        run: |
+          source("https://raw.githubusercontent.com/apache/arrow/master/ci/etc/rprofile")
+          
+          if (TRUE) {
+            tools::write_PACKAGES("repo/src/contrib", type = "source")
+          }
+
+          install.packages(
+            "arrow",
+            repos = c(getOption("arrow.dev_repo"), "https://cloud.r-project.org"),
+            verbose = TRUE
+          )
+          library(arrow)
+          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+
+          # Our Version should always be > CRAN so we would detect a CRAN version here.
+          stopifnot(packageVersion("arrow") == "${{needs.source.outputs.version}}")
+
+
+      - name: Retry with verbosity if that failed
+        if: failure()
+        env:
+          LIBARROW_BINARY: "FALSE"
+          ARROW_R_DEV: "TRUE"
+        run: |
+          source("https://raw.githubusercontent.com/apache/arrow/master/ci/etc/rprofile")
+          
+          if (TRUE) {
+            tools::write_PACKAGES("repo/src/contrib", type = "source")
+          }
+
+          install.packages(
+            "arrow",
+            repos = c(getOption("arrow.dev_repo"), "https://cloud.r-project.org"),
+            verbose = TRUE
+          )
+          library(arrow)
+          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+
+          # Our Version should always be > CRAN so we would detect a CRAN version here.
+          stopifnot(packageVersion("arrow") == "${{needs.source.outputs.version}}")
+
+
+  update-repo:
+    needs: r-packages
+    if: env.UPLOAD_PKG && success() && false
+    name: Update PACKAGES
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          install-r: false
+
+      - name: Install davfs2 & Mount Repository
+        run: | 
+          sudo apt update && sudo apt install davfs2
+
+          # Create mount point
+          mkdir nightly
+
+          # make credentials available
+          sudo bash -c 'echo "https://nightly.wujciak.de:8080 ${{ secrets.CROSSBOW_NIGHTLIES_USER }} ${{ secrets.CROSSBOW_NIGHTLIES_TOKEN }}" >> /etc/davfs2/secrets'
+
+          # mount with read&write access
+          sudo mount -t davfs https://nightly.wujciak.de:8080 nightly -o rw
+
+      - name: Update Repository Index
+        shell: sudo Rscript {0}
+        run: |
+          # Only keep 14 versions per os/R-version
+          prune <- function(dir, keep_n = 14) {
+            files <- list.files(dir, pattern = "^arrow", full.names = TRUE)
+            n_repo <- length(files)
+
+            if (n_repo > keep_n) {
+              info <- file.info(files)
+              info <- info[
+                order(
+                  as.Date(info$mtime, format = "%d/%m/%Y"),
+                  decreasing = TRUE
+                ),
+              ]
+              excess <- tail(rownames(info), n_repo - keep_n)
+              file.remove(excess)
+            }
+          }
+
+          # Update & prune R repository
+          
+          # find all dirs that end in R verion number
+          bin_dirs <- paste0("nightly/r/bin/", dir("nightly/r/bin", recursive = TRUE, include.dirs = TRUE, pattern = "\\d\\.\\d$"))
+          
+          for(dir in bin_dirs) {
+            win_bin <- grepl("windows", dir)
+            
+            prune(dir)
+
+            if(file.exists(paste0(dir,"/PACKAGES"))) {
+              tools::update_PACKAGES(dir , type = ifelse(win_bin, "win.binary", "mac.binary"), latestOnly = FALSE)
+            } else {
+              tools::write_PACKAGES(dir , type = ifelse(win_bin, "win.binary", "mac.binary"), latestOnly = FALSE)
+            }
+
+          }
+
+          # prune libarrow 
+          lib_dirs <- list.dirs("nightly/r/libarrow/bin")
+          lib_dirs <- lib_dirs[ grep("bin/.+", lib_dirs)]
+
+          for(dir in lib_dirs) {
+            prune(dir)
+          }
+      - run: sudo umount nightly
