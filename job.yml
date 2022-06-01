@@ -1,0 +1,35 @@
+!Job
+target: !Target
+  head: 309e42a0d3ac52a58f07471f1327c0c42426d93d
+  email: unknown
+  branch: ARROW-12626-toolchain-xsimd
+  remote: https://github.com/wesm/arrow.git
+  github_repo: wesm/arrow
+  version: 9.0.0.dev160
+  no_rc_version: 9.0.0.dev160
+  no_rc_semver_version: 9.0.0-dev160
+tasks:
+  conan-maximum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: >-
+        -e ARROW_CONAN_WITH_LZ4=True
+      image: conan
+
+  ########################### Python Minimal ############################
+
+    branch: actions-983084a5d3-github-conan-maximum
+    commit: 674bfe9c88b5cf6cca4aaff9b1764c1df762514e
+  conan-minimum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      image: conan
+
+    branch: actions-983084a5d3-github-conan-minimum
+    commit: 1ae410a9fff1062603dbf3b7fb13b9373213cd63
+params: {}
+branch: actions-983084a5d3
