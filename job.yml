@@ -1,0 +1,49 @@
+!Job
+target: !Target
+  head: e34c742008598d7dbb45c8d3df2688b502ae6c4e
+  email: unknown
+  branch: opensuse-42
+  remote: https://github.com/nealrichardson/arrow.git
+  github_repo: nealrichardson/arrow
+  version: 9.0.0.dev172
+  no_rc_version: 9.0.0.dev172
+  no_rc_semver_version: 9.0.0-dev172
+tasks:
+  test-r-rstudio-r-base-4.2-focal: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rstudio
+      r_image: r-base
+      r_tag: 4.2-focal
+    branch: actions-82a22ebffb-azure-test-r-rstudio-r-base-4.2-focal
+    commit: 4a82d020003d8f5b2abc5796e72f5a13c994497e
+  test-r-rstudio-r-base-4.2-centos7-devtoolset-8: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rstudio
+      r_image: r-base
+      r_tag: 4.2-centos7
+      devtoolset_version: 8
+
+    branch: actions-82a22ebffb-azure-test-r-rstudio-r-base-4.2-centos7-devtoolset-8
+    commit: a4d29819518f7949c136759a5ba3fc57b68cf2df
+  test-r-rstudio-r-base-4.1-opensuse153: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rstudio
+      r_image: r-base
+      r_tag: 4.1-opensuse153
+
+  # This is with R built with --enable-lto
+  # CRAN also does R CMD INSTALL --use-LTO
+  # which overrides the UseLTO field in r/DESCRIPTION
+    branch: actions-82a22ebffb-azure-test-r-rstudio-r-base-4.1-opensuse153
+    commit: 8dd61df4de2bd2b410f94d106fc41a9d18b91af0
+params: {}
+branch: actions-82a22ebffb
