@@ -1,0 +1,62 @@
+!Job
+target: !Target
+  head: bc51567f0228bde9020e9765e2fc6a963c537542
+  email: unknown
+  branch: arrow-16729
+  remote: https://github.com/lidavidm/arrow.git
+  github_repo: lidavidm/arrow
+  version: 9.0.0.dev173
+  no_rc_version: 9.0.0.dev173
+  no_rc_semver_version: 9.0.0-dev173
+tasks:
+  test-debian-10-cpp-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: amd64
+        DEBIAN: '10'
+      image: debian-cpp
+
+    branch: actions-66aacf6051-github-test-debian-10-cpp-amd64
+    commit: c719936c747dfc5369d92ede27af4c8f9d53e18d
+  test-debian-11-cpp-i386: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: i386
+        DEBIAN: '11'
+      flags: -e ARROW_S3=OFF -e ARROW_GANDIVA=OFF
+      image: debian-cpp
+
+    branch: actions-66aacf6051-github-test-debian-11-cpp-i386
+    commit: 7ef102d346cb877771e2f76dbad2436b9d62bb6f
+  test-debian-11-cpp-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: amd64
+        DEBIAN: '11'
+      image: debian-cpp
+
+    branch: actions-66aacf6051-github-test-debian-11-cpp-amd64
+    commit: 13dba607d17b22371cfdac9d30134a5c353004dc
+  test-debian-10-cpp-i386: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARCH: i386
+        DEBIAN: '10'
+      flags: -e ARROW_S3=OFF -e ARROW_GANDIVA=OFF
+      image: debian-cpp
+    branch: actions-66aacf6051-github-test-debian-10-cpp-i386
+    commit: e087ea204a064db2b8e6ffe520e31b933c2dfe0c
+params: {}
+branch: actions-66aacf6051
