@@ -1,0 +1,36 @@
+!Job
+target: !Target
+  head: 1dbcea892eb855a69be9b5b758b5f76ebb3cedde
+  email: unknown
+  branch: cpp-force-options
+  remote: https://github.com/kou/arrow.git
+  github_repo: kou/arrow
+  version: 9.0.0.dev201
+  no_rc_version: 9.0.0.dev201
+  no_rc_semver_version: 9.0.0-dev201
+tasks:
+  conan-minimum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      image: conan
+
+    branch: actions-e2510e4efd-github-conan-minimum
+    commit: cdfa12f13781632389b57b41aecf79ae9d13e486
+  conan-maximum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: >-
+        -e ARROW_CONAN_PARQUET=True
+        -e ARROW_CONAN_WITH_LZ4=True
+      image: conan
+
+  ########################### Python Minimal ############################
+
+    branch: actions-e2510e4efd-github-conan-maximum
+    commit: 08515aa39ec27141977926640d52edf496697cbc
+params: {}
+branch: actions-e2510e4efd
