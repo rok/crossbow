@@ -1,0 +1,52 @@
+!Job
+target: !Target
+  head: 865701aa4b42aa42dbc9bf588aec34bdb2ce44ea
+  email: unknown
+  branch: ARROW-16679-configure-fails-if-CDPATH-is-not-null
+  remote: https://github.com/assignUser/arrow.git
+  github_repo: assignUser/arrow
+  version: 9.0.0.dev213
+  no_rc_version: 9.0.0.dev213
+  no_rc_semver_version: 9.0.0-dev213
+tasks:
+  test-r-depsource-system: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: -e ARROW_DEPENDENCY_SOURCE=SYSTEM
+      image: ubuntu-r-only-r
+
+    branch: actions-7881dddc6f-github-test-r-depsource-system
+    commit: 057bc255c34dd096d6cc5e0a4c40df33aba8e60c
+  conda-win-vs2017-py37-r41: !Task
+    ci: azure
+    template: conda-recipes/azure.win.yml
+    artifacts:
+    - arrow-cpp-9.0.0.dev213-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    - pyarrow-9.0.0.dev213-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    params:
+      config: win_64_cuda_compiler_versionNonenumpy1.18python3.7.____cpython
+      r_config: win_64_r_base4.0
+    branch: actions-7881dddc6f-azure-conda-win-vs2017-py37-r41
+    commit: 7b3bffe8a96a601468cff8372b69e79223f0760a
+  conda-win-vs2017-py37-r40: !Task
+    ci: azure
+    template: conda-recipes/azure.win.yml
+    artifacts:
+    - arrow-cpp-9.0.0.dev213-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    - pyarrow-9.0.0.dev213-py37(h[a-z0-9]+)_0_cpu.tar.bz2
+    params:
+      config: win_64_cuda_compiler_versionNonenumpy1.18python3.7.____cpython
+      r_config: win_64_r_base4.0
+    branch: actions-7881dddc6f-azure-conda-win-vs2017-py37-r40
+    commit: 263fc6d2fdab16980eca4cfcc9b25464e1c4ee5c
+  test-r-offline-maximal: !Task
+    ci: github
+    template: r/github.linux.offline.build.yml
+    artifacts: []
+    params: {}
+    branch: actions-7881dddc6f-github-test-r-offline-maximal
+    commit: 4a6c969a660fc16921281394b0f8c97a129cf79f
+params: {}
+branch: actions-7881dddc6f
