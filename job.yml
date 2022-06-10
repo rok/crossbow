@@ -1,0 +1,103 @@
+!Job
+target: !Target
+  head: 5cc0188ccdbce2066b9d34179bfbaa670edec739
+  email: unknown
+  branch: ARROW-16806
+  remote: https://github.com/raulcd/arrow.git
+  github_repo: raulcd/arrow
+  version: 9.0.0.dev211
+  no_rc_version: 9.0.0.dev211
+  no_rc_semver_version: 9.0.0-dev211
+tasks:
+  verify-rc-source-python-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: python
+      github_runner: macos-10.15
+    branch: actions-67b0c5f4f9-github-verify-rc-source-python-macos-amd64
+    commit: e58c3f2a3630efd6fce64e05e261bb467eb293c3
+  verify-rc-source-python-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: python
+      distro: ubuntu
+    branch: actions-67b0c5f4f9-github-verify-rc-source-python-linux-ubuntu-20.04-amd64
+    commit: 33c176423670e5e12ade4d21a1f11a0ab6cc6339
+  verify-rc-source-python-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: python
+      distro: ubuntu
+    branch: actions-67b0c5f4f9-github-verify-rc-source-python-linux-ubuntu-18.04-amd64
+    commit: d88e00335c72364516c2d3700dcca137963b7dcd
+  verify-rc-source-python-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: python
+      distro: conda
+    branch: actions-67b0c5f4f9-github-verify-rc-source-python-linux-conda-latest-amd64
+    commit: 7d182a09c53d42e1e47472f61a092126e6821602
+  verify-rc-source-python-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: python
+      distro: almalinux
+    branch: actions-67b0c5f4f9-github-verify-rc-source-python-linux-almalinux-8-amd64
+    commit: 836e756d43f60ec42d867d74919eae6bc5f12f1b
+  verify-rc-source-python-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: python
+      distro: ubuntu
+    branch: actions-67b0c5f4f9-github-verify-rc-source-python-linux-ubuntu-22.04-amd64
+    commit: 9779fb927a162eb7d6d7f55af02d64a8154553fa
+  verify-rc-source-python-macos-conda-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: python
+      use_conda: true
+      github_runner: macos-10.15
+
+    branch: actions-67b0c5f4f9-github-verify-rc-source-python-macos-conda-amd64
+    commit: d12142e898c48d68622ec9c2b6f88ba237eeea32
+  verify-rc-source-python-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: python
+      github_runner: [self-hosted, macOS, arm64]
+    branch: actions-67b0c5f4f9-github-verify-rc-source-python-macos-arm64
+    commit: 2f82b7e43426d71b84ca90a0a1c48a21ec961e09
+params: {}
+branch: actions-67b0c5f4f9
