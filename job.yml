@@ -1,0 +1,76 @@
+!Job
+target: !Target
+  head: b8336ef41518331bac2eec814481cdeaaed120df
+  email: unknown
+  branch: gcsp
+  remote: https://github.com/emkornfield/arrow.git
+  github_repo: emkornfield/arrow
+  version: 9.0.0.dev299
+  no_rc_version: 9.0.0.dev299
+  no_rc_semver_version: 9.0.0-dev299
+tasks:
+  wheel-windows-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.windows.yml
+    artifacts:
+    - pyarrow-9.0.0.dev299-cp37-cp37m-win_amd64.whl
+    params:
+      python_version: '3.7'
+    branch: actions-d604965942-github-wheel-windows-cp37-amd64
+    commit: cbef551894bbf5a77a58705bc380756cce64e6a4
+  wheel-macos-mavericks-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.osx.amd64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev299-cp37-cp37m-macosx_10_9_x86_64.whl
+    params:
+      python_version: '3.7'
+      macos_deployment_target: '10.9'
+      arrow_s3: OFF
+      arrow_gcs: OFF
+    branch: actions-d604965942-github-wheel-macos-mavericks-cp37-amd64
+    commit: 798f51bd45ed985f7eac783d9a40ab8abb45dac8
+  wheel-macos-high-sierra-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.osx.amd64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev299-cp37-cp37m-macosx_10_13_x86_64.whl
+    params:
+      python_version: '3.7'
+      macos_deployment_target: '10.13'
+      arrow_s3: ON
+      arrow_gcs: ON
+    branch: actions-d604965942-github-wheel-macos-high-sierra-cp37-amd64
+    commit: 5d0536726e4be3432c392ec33f941b604785cbfa
+  wheel-manylinux2010-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.linux.amd64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev299-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+    params:
+      python_version: '3.7'
+      manylinux_version: '2010'
+    branch: actions-d604965942-github-wheel-manylinux2010-cp37-amd64
+    commit: 1c60e39219bd87e4d2d224915c81e21eb0c0c7f1
+  wheel-manylinux2014-cp37-arm64: !Task
+    ci: travis
+    template: python-wheels/travis.linux.arm64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev299-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+    params:
+      python_version: '3.7'
+      manylinux_version: '2014'
+    branch: actions-d604965942-travis-wheel-manylinux2014-cp37-arm64
+    commit: f1c78f9358ab6037de0cb551474ac122b70cd008
+  wheel-manylinux2014-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.linux.amd64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev299-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+    params:
+      python_version: '3.7'
+      manylinux_version: '2014'
+    branch: actions-d604965942-github-wheel-manylinux2014-cp37-amd64
+    commit: 604e302edd1aa0eeec73f741e1b7d6970b40fa4b
+params: {}
+branch: actions-d604965942
