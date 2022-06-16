@@ -1,0 +1,39 @@
+!Job
+target: !Target
+  head: 2f6282dee8e2013623ffd42985aa7ccc7d108461
+  email: unknown
+  branch: ci-cpp-xsimd
+  remote: https://github.com/kou/arrow.git
+  github_repo: kou/arrow
+  version: 9.0.0.dev235
+  no_rc_version: 9.0.0.dev235
+  no_rc_semver_version: 9.0.0-dev235
+tasks:
+  test-r-depsource-system: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: -e ARROW_DEPENDENCY_SOURCE=SYSTEM -e xsimd_SOURCE=BUNDLED
+      image: ubuntu-r-only-r
+
+    branch: actions-72ec174551-github-test-r-depsource-system
+    commit: 9ce5da95de1062fb83cafc6ec4364937672d9031
+  example-cpp-minimal-build-static-system-dependency: !Task
+    ci: github
+    template: cpp-examples/github.linux.yml
+    artifacts: []
+    params:
+      type: minimal_build
+      run: static-system-dependency
+    branch: actions-72ec174551-github-example-cpp-minimal-build-static-system-dependency
+    commit: d7742f26c185a7c85acf8f8dcb1312be265e7752
+  test-build-vcpkg-win: !Task
+    ci: github
+    template: vcpkg-tests/github.windows.yml
+    artifacts: []
+    params: {}
+    branch: actions-72ec174551-github-test-build-vcpkg-win
+    commit: 228cea3fd6147e2beb0693a2efbe112d004187e0
+params: {}
+branch: actions-72ec174551
