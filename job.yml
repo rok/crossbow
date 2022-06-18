@@ -1,0 +1,37 @@
+!Job
+target: !Target
+  head: 2fd62996086c013b43bbc7a74f23127adeebd517
+  email: unknown
+  branch: ci-remove-hiveserver2
+  remote: https://github.com/kou/arrow.git
+  github_repo: kou/arrow
+  version: 9.0.0.dev244
+  no_rc_version: 9.0.0.dev244
+  no_rc_semver_version: 9.0.0-dev244
+tasks:
+  conan-minimum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      image: conan
+
+    branch: actions-13fcd66b90-github-conan-minimum
+    commit: 4d3fae97ea8bd7f4bfca3759a0b7be3e2094077d
+  conan-maximum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: >-
+        -e ARROW_CONAN_PARQUET=True
+        -e ARROW_CONAN_WITH_LZ4=True
+        -e ARROW_CONAN_WITH_JEMALLOC=True
+      image: conan
+
+  ########################### Python Minimal ############################
+
+    branch: actions-13fcd66b90-github-conan-maximum
+    commit: 14a7bb684ff274176f6a7cae98c56d566fbcb61a
+params: {}
+branch: actions-13fcd66b90
