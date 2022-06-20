@@ -66,11 +66,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Push Docker Image
-        shell: bash
-        run: archery docker push java-jni-manylinux-2014
-
   build-cpp-macos:
     name: Build C++ Libs MacOS
     runs-on: ["self-hosted", "macOS", "intel"]
@@ -115,11 +110,6 @@ jobs:
             $GITHUB_WORKSPACE/arrow/java-dist
       - name: Compress into single artifact
         run: tar -cvzf arrow-shared-libs-macos.tar.gz arrow/java-dist/
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: macos-shared-lib
-          path: arrow-shared-libs-macos.tar.gz
 
   package-jars:
     name: Build Jar Files
