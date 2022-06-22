@@ -1,0 +1,76 @@
+!Job
+target: !Target
+  head: 1f9a980602754b0156d47cb6d00c5668fb0defd1
+  email: unknown
+  branch: ARROW-16779-pyarrow-flight-m1
+  remote: https://github.com/wjones127/arrow.git
+  github_repo: wjones127/arrow
+  version: 9.0.0.dev250
+  no_rc_version: 9.0.0.dev250
+  no_rc_semver_version: 9.0.0-dev250
+tasks:
+  wheel-manylinux2014-cp37-arm64: !Task
+    ci: travis
+    template: python-wheels/travis.linux.arm64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev250-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+    params:
+      python_version: '3.7'
+      manylinux_version: '2014'
+    branch: actions-8de7e78663-travis-wheel-manylinux2014-cp37-arm64
+    commit: 3da3826a8447a723a957c1a28a08e48d61d6c34a
+  wheel-macos-high-sierra-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.osx.amd64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev250-cp37-cp37m-macosx_10_13_x86_64.whl
+    params:
+      python_version: '3.7'
+      macos_deployment_target: '10.13'
+      arrow_s3: ON
+      arrow_gcs: ON
+    branch: actions-8de7e78663-github-wheel-macos-high-sierra-cp37-amd64
+    commit: 90d8cbee0f46dd39494ffe9393ced15b48c854ab
+  wheel-manylinux2014-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.linux.amd64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev250-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+    params:
+      python_version: '3.7'
+      manylinux_version: '2014'
+    branch: actions-8de7e78663-github-wheel-manylinux2014-cp37-amd64
+    commit: 3cbe3e330c745a1898ec5a4bda415e3ab8b9437a
+  wheel-macos-mavericks-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.osx.amd64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev250-cp37-cp37m-macosx_10_9_x86_64.whl
+    params:
+      python_version: '3.7'
+      macos_deployment_target: '10.9'
+      arrow_s3: OFF
+      arrow_gcs: OFF
+    branch: actions-8de7e78663-github-wheel-macos-mavericks-cp37-amd64
+    commit: 57089c1e891c6e1ca5ad5b9c1fb0c245f5ef330d
+  wheel-manylinux2010-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.linux.amd64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev250-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+    params:
+      python_version: '3.7'
+      manylinux_version: '2010'
+    branch: actions-8de7e78663-github-wheel-manylinux2010-cp37-amd64
+    commit: 67a408905cef7f9378d66cd1b643e289fffb87fb
+  wheel-windows-cp37-amd64: !Task
+    ci: github
+    template: python-wheels/github.windows.yml
+    artifacts:
+    - pyarrow-9.0.0.dev250-cp37-cp37m-win_amd64.whl
+    params:
+      python_version: '3.7'
+    branch: actions-8de7e78663-github-wheel-windows-cp37-amd64
+    commit: 0655eeb58f770a19d94d2e18dfbfb0b479979370
+params: {}
+branch: actions-8de7e78663
