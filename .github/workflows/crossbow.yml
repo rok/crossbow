@@ -263,17 +263,17 @@ jobs:
         run: |
           # getwd() is necessary as this macro is used within jobs using a docker container
           tools::write_PACKAGES(file.path(getwd(), "repo/src/contrib", fsep = "/"), type = "source", verbose = TRUE)
+      - name: Serve repo via localhost
+        shell: bash
+        run: |
+          cd repo
+          python3 -m http.server 8080 --bind localhost &
       - name: Show repo 
         shell: bash 
         # tree not available in git-bash on windows
         run: |
           ls -R repo
           curl localhost:8080 || echo "Curl Error"
-      - name: Serve repo via localhost
-        shell: bash
-        run: |
-          cd repo
-          python3 -m http.server 8080 --bind localhost &
       - name: Add dev repo to .Rprofile
         shell: bash
         run: |
@@ -305,7 +305,7 @@ jobs:
             # Windows doesn't support the --strip arg
             INSTALL_opts <- c(INSTALL_opts, "--strip")
           }
-
+          print( getOption("arrow.dev_repo"))
           cat("Install arrow from dev repo.\n")
           install.packages(
             "arrow",
@@ -397,17 +397,18 @@ jobs:
         run: |
           # getwd() is necessary as this macro is used within jobs using a docker container
           tools::write_PACKAGES(file.path(getwd(), "repo/src/contrib", fsep = "/"), type = "source", verbose = TRUE)
+
+      - name: Serve repo via localhost
+        shell: bash
+        run: |
+          cd repo
+          python3 -m http.server 8080 --bind localhost &
       - name: Show repo 
         shell: bash 
         # tree not available in git-bash on windows
         run: |
           ls -R repo
           curl localhost:8080 || echo "Curl Error"
-      - name: Serve repo via localhost
-        shell: bash
-        run: |
-          cd repo
-          python3 -m http.server 8080 --bind localhost &
       - name: Add dev repo to .Rprofile
         shell: bash
         run: |
