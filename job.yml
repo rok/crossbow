@@ -1,0 +1,41 @@
+!Job
+target: !Target
+  head: 226c31b3ec0fe94a55e10604bb4621b2fde3bbee
+  email: unknown
+  branch: r-gcs
+  remote: https://github.com/nealrichardson/arrow.git
+  github_repo: nealrichardson/arrow
+  version: 9.0.0.dev305
+  no_rc_version: 9.0.0.dev305
+  no_rc_semver_version: 9.0.0-dev305
+tasks:
+  test-r-depsource-system: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: -e ARROW_DEPENDENCY_SOURCE=SYSTEM -e ARROW_GCS=OFF -e xsimd_SOURCE=BUNDLED
+      image: ubuntu-r-only-r
+
+    branch: actions-5668d3fe2c-github-test-r-depsource-system
+    commit: 676a8005bbbad38414e824bd0a27b5472b0ef299
+  homebrew-r-brew: !Task
+    ci: github
+    template: r/github.macos.brew.yml
+    artifacts: []
+    params:
+      formula: apache-arrow.rb
+
+  ############################## Arrow JAR's ##################################
+
+    branch: actions-5668d3fe2c-github-homebrew-r-brew
+    commit: f910670d841e95907c13f89c9ee71b575ec8fc05
+  test-r-offline-maximal: !Task
+    ci: github
+    template: r/github.linux.offline.build.yml
+    artifacts: []
+    params: {}
+    branch: actions-5668d3fe2c-github-test-r-offline-maximal
+    commit: 5da6baf9204c57dddcb47d169e7847bf8f431a2b
+params: {}
+branch: actions-5668d3fe2c
