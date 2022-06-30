@@ -1,0 +1,37 @@
+!Job
+target: !Target
+  head: 4f48ff87bfb89f0e5758146e08bd5aeb92d0900d
+  email: unknown
+  branch: fix_nightly_builds_post_ARROW_16407
+  remote: https://github.com/dragosmg/arrow.git
+  github_repo: dragosmg/arrow
+  version: 9.0.0.dev297
+  no_rc_version: 9.0.0.dev297
+  no_rc_semver_version: 9.0.0-dev297
+tasks:
+  test-r-offline-minimal: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e TEST_OFFLINE_BUILD=true
+
+    branch: actions-f6cfd7f33f-azure-test-r-offline-minimal
+    commit: 9cb4d0e34e75d2b0ebf77900f92c089a18dccdfe
+  test-r-linux-valgrind: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_R_DEV: 'TRUE'
+        UBUNTU: 18.04
+      image: ubuntu-r-valgrind
+
+    branch: actions-f6cfd7f33f-azure-test-r-linux-valgrind
+    commit: 4f5ded1b49e4556ac4249b6d97e37b13e5b4698a
+params: {}
+branch: actions-f6cfd7f33f
