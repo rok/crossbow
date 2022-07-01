@@ -1,0 +1,95 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+
+# NOTE: must set "Crossbow" as name to have the badge links working in the
+# github comment reports!
+name: Crossbow
+on:
+  push:
+    branches:
+      - "*-github-*"
+
+
+jobs:
+  r-versions:
+    name: "rstudio/r-base:latest-focal"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    env:
+      R_ORG: "rstudio"
+      R_IMAGE: "r-base"
+      R_TAG: "latest-focal"
+      ARROW_R_DEV: "TRUE"
+    steps:
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: assignUser/arrow
+          ref: beb4ccde5b00e18b59a3776e3196f85657ce429c
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          cache: 'pip'
+          python-version: 3.8
+      - name: Install Archery
+        shell: bash
+        run: pip install -e arrow/dev/archery[all]
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Cache Docker Volumes
+        uses: actions/cache@v3
+        with:
+          path: |
+            .docker
+            revdep
+          key: revdep-check
+      - name: Docker Run
+        shell: bash
+        run: archery docker run r-revdepcheck
+      - name: revdepcheck CRAN report
+        if: always()
+        shell: bash
+        run: cat arrow/r/revdep/cran.md
+      - name: revdepcheck failures
+        if: always()
+        shell: bash
+        run: cat arrow/r/revdep/failures.md
+      - name: revdepcheck problems
+        if: always()
+        shell: bash
+        run: cat arrow/r/revdep/problems.md
+      - name: Save the revdep output
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: revdepcheck-folder
+          path: arrow/r/revdep
+      - name: Docker Push
+        if: success()
+        continue-on-error: true
+        run: archery docker push r-revdepcheck
