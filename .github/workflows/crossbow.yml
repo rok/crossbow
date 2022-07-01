@@ -56,6 +56,14 @@ jobs:
         run: |
           pip install -e arrow/dev/archery[all]
           pip install awscli
+      - name: Setup tmate session
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          BUCKET: ${{ secrets.SCCACHE_BUCKET }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
       - name: Fetch cached revdep volume
         env:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
