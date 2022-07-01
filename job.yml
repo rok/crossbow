@@ -1,0 +1,53 @@
+!Job
+target: !Target
+  head: fafe20aaf306103756415b1d430755ef19cff55f
+  email: unknown
+  branch: r-binary-default
+  remote: https://github.com/nealrichardson/arrow.git
+  github_repo: nealrichardson/arrow
+  version: 9.0.0.dev315
+  no_rc_version: 9.0.0.dev315
+  no_rc_semver_version: 9.0.0-dev315
+tasks:
+  test-r-offline-minimal: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e TEST_OFFLINE_BUILD=true
+
+    branch: actions-0b61e7d1b0-azure-test-r-offline-minimal
+    commit: 4f7a4a0bba3791c5fba920914e653218fb7349f6
+  r-binary-packages: !Task
+    ci: github
+    template: r/github.packages.yml
+    artifacts:
+    - r-lib__libarrow__bin__windows__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__centos-7__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__ubuntu-18.04__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__ubuntu-22.04__arrow-[0-9\.]+\.zip
+    - r-pkg__bin__windows__contrib__4.1__arrow_[0-9\.]+\.zip
+    - r-pkg__bin__windows__contrib__4.2__arrow_[0-9\.]+\.zip
+    - r-pkg__bin__macosx__contrib__4.1__arrow_[0-9\.]+\.tgz
+    - r-pkg__bin__macosx__contrib__4.2__arrow_[0-9\.]+\.tgz
+    - r-pkg__src__contrib__arrow_[0-9\.]+\.tar\.gz
+    params: {}
+    branch: actions-0b61e7d1b0-github-r-binary-packages
+    commit: 81b290196a27f41fdde69173ca056033f1a991f5
+  test-ubuntu-18.04-r-sanitizer: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 18.04
+        R_PRUNE_DEPS: true
+      image: ubuntu-r-sanitizer
+
+    branch: actions-0b61e7d1b0-azure-test-ubuntu-18.04-r-sanitizer
+    commit: 12c8bf4da25366dd61eb8a55acf6cc9a6e1b6b9f
+params: {}
+branch: actions-0b61e7d1b0
