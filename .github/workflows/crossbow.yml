@@ -35,10 +35,11 @@ jobs:
           CALL rmdir /s /q vcpkg 2>NUL
           CALL git clone https://github.com/microsoft/vcpkg.git vcpkg
           CALL cd vcpkg
+          CALL git checkout ec547c15d6b9b426c1d9666adc9a79fd2c46d79e
           CALL bootstrap-vcpkg.bat -win64 -disableMetrics
           CALL vcpkg integrate install
           CALL setx PATH "%PATH%;C:\vcpkg"
-      - name: 'Setup NuGet Credentials'
+      - name: Setup NuGet Credentials
         shell: bash
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
