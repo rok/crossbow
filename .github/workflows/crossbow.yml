@@ -60,12 +60,12 @@ jobs:
         env:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          BUCKET: ${{ secrets.SCCACHE_BUCKET }}/revdep
+          BUCKET: ${{ secrets.SCCACHE_BUCKET }}
         shell: bash
         run: |
           if [[ $(aws s3 ls $BUCKET/revdep.tar.gz | wc -l) > 0 ]]; then
             echo "Restoring revdep volume."
-            aws s3 cp $BUCKET/revdep.tar.gz revdep.tar.gz --no-progress
+            aws s3 cp $BUCKET/revdep.tar.gz . --no-progress
             tar -pzxf revdep.tar.gz revdep
             rm revdep.tar.gz
           else
@@ -85,13 +85,12 @@ jobs:
         env:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          BUCKET: ${{ secrets.SCCACHE_BUCKET }}/revdep
+          BUCKET: "${{ secrets.SCCACHE_BUCKET }}"
         shell: bash
         run: |
             echo "Caching revdep volume."
             tar -pzcf revdep.tar.gz revdep
-            aws s3 cp revdep.tar.gz $BUCKET/revdep.tar.gz --no-progress
-            rm revdep.tar.gz    
+            aws s3 cp revdep.tar.gz ${BUCKET} --no-progress  
       - name: revdepcheck CRAN report
         if: always()
         shell: bash
