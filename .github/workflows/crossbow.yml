@@ -1,83 +1,57 @@
-################################################################################
-###                      .github/workflows/crossbow.yml                      ###
-################################################################################
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-
-
-# NOTE: must set "Crossbow" as name to have the badge links working in the
-# github comment reports!
 name: Crossbow
+
 on:
   push:
     branches:
-      - "*-github-*"
-
+      - "revdep-test"
 
 jobs:
-  r-versions:
-    name: "rstudio/r-base:latest-focal"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
+  test-vcpkg-win:
     env:
-      R_ORG: "rstudio"
-      R_IMAGE: "r-base"
-      R_TAG: "latest-focal"
-      ARROW_R_DEV: "TRUE"
+      VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
+    name: Install build deps with vcpkg and build Arrow C++
+    runs-on: windows-2019
     steps:
       - name: Checkout Arrow
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-          path: arrow
-          repository: apache/arrow
-          ref: f29cccf56158f1bd490dddae34deea94a7879a22
-          submodules: recursive
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          cache: 'pip'
-          python-version: 3.8
-      - name: Install Archery
+        run: |
+          git clone --no-checkout https://github.com/apache/arrow.git arrow
+          git -C arrow fetch -t https://github.com/apache/arrow.git master
+          git -C arrow checkout FETCH_HEAD
+          git -C arrow submodule update --init --recursive
+      - name: Download Timezone Database
         shell: bash
-        run: pip install -e arrow/dev/archery[all]
-
-
-      - name: Docker Run
+        run: arrow/ci/scripts/download_tz_database.sh
+      - name: Remove and Reinstall vcpkg
+        # When running vcpkg in Github Actions on Windows, remove the
+        # preinstalled vcpkg and install the newest version from source.
+        # Versions of vcpkg rapidly stop working until updated, and
+        # the safest and most reliable way to update vcpkg is simply
+        # to remove and reinstall it.
+        shell: cmd
+        run: |
+          CALL vcpkg integrate remove 2>NUL
+          CALL C:
+          CALL cd \
+          CALL rmdir /s /q vcpkg 2>NUL
+          CALL git clone https://github.com/microsoft/vcpkg.git vcpkg
+          CALL cd vcpkg
+          CALL bootstrap-vcpkg.bat -win64 -disableMetrics
+          CALL vcpkg integrate install
+          CALL setx PATH "%PATH%;C:\vcpkg"
+      - name: 'Setup NuGet Credentials'
         shell: bash
-        run: archery docker run r-revdepcheck
-      - name: revdepcheck CRAN report
-        if: always()
-        shell: bash
-        run: cat arrow/r/revdep/cran.md
-      - name: revdepcheck failures
-        if: always()
-        shell: bash
-        run: cat arrow/r/revdep/failures.md
-      - name: revdepcheck problems
-        if: always()
-        shell: bash
-        run: cat arrow/r/revdep/problems.md
-      - name: Save the revdep output
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: revdepcheck-folder
-          path: arrow/r/revdep
-
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          `./vcpkg/vcpkg fetch nuget | tail -n 1`
+          sources add
+          -source "https://nuget.pkg.github.com/ursacomputing/index.json"
+          -storepasswordincleartext
+          -name "GitHub"
+          -username "ursacomputing"
+          -password "$GITHUB_TOKEN"
+      - name: Install Dependencies with vcpkg and Build Arrow C++
+        shell: cmd
+        run: |
+          CALL cd arrow
+          CALL dev\tasks\vcpkg-tests\cpp-build-vcpkg.bat
