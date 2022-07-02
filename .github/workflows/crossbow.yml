@@ -63,11 +63,16 @@ jobs:
           BUCKET: "s3://${{ secrets.SCCACHE_BUCKET }}/revdep"
         shell: bash
         run: |
-          if [[ $(aws s3 ls $BUCKET/revdep.tar.gz | wc -l) > 0 ]]; then
+          if [[ $(aws s3 ls $BUCKET/revdep2.tar.gz | wc -l) > 0 ]]; then
             echo "Restoring revdep volume."
             aws s3 cp $BUCKET/revdep.tar.gz revdep.tar.gz --no-progress
             tar -pzxf revdep.tar.gz -C arrow/r
           fi         
+          if [[ $(aws s3 ls $BUCKET/crancache.tar.gz | wc -l) > 0 ]]; then
+            echo "Restoring crancache."
+            aws s3 cp $BUCKET/crancache.tar.gz crancache.tar.gz --no-progress
+            tar -pzxf crancache.tar.gz -C arrow/
+          fi     
       - name: Login to Dockerhub
         uses: docker/login-action@v2
         with:
@@ -85,8 +90,11 @@ jobs:
         shell: bash
         run: |
             echo "Caching revdep volume."
-            tar -pzcf revdep.tar.gz arrow/r/revdep
-            aws s3 cp revdep.tar.gz ${BUCKET}/revdep.tar.gz --no-progress  
+            tar -pzcf revdep2.tar.gz arrow/r/revdep
+            aws s3 cp revdep2.tar.gz ${BUCKET}/revdep2.tar.gz --no-progress 
+            echo "Caching crancache."
+            tar -pzcf crancache.tar.gz arrow/.crancache
+            aws s3 cp crancache.tar.gz ${BUCKET}/crancache.tar.gz --no-progress  
       - name: revdepcheck CRAN report
         if: always()
         shell: bash
