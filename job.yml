@@ -1,0 +1,678 @@
+!Job
+target: !Target
+  head: 897a4c0ce73c3fe07872beee2c1d2128e44f6dd4
+  email: unknown
+  branch: master
+  remote: https://github.com/apache/arrow
+  github_repo: apache/arrow
+  version: 9.0.0.dev313
+  no_rc_version: 9.0.0.dev313
+  no_rc_semver_version: 9.0.0-dev313
+tasks:
+  verify-rc-source-integration-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: integration
+      github_runner: [self-hosted, macOS, arm64]
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-integration-macos-arm64
+    commit: e0a26fdeebfbc5cfbd727bab328f8624f0fe4653
+  verify-rc-source-python-macos-conda-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: python
+      use_conda: true
+      github_runner: macos-10.15
+
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-python-macos-conda-amd64
+    commit: 57045a3c95d11c24ebd87768a7a6c609573a175b
+  verify-rc-source-integration-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: integration
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-integration-linux-ubuntu-22.04-amd64
+    commit: efc8f06db426f504610d8738ba8b7f7c4dd0c747
+  verify-rc-source-ruby-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: ruby
+      distro: ubuntu
+
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-ruby-linux-ubuntu-18.04-amd64
+    commit: 5e7ff431ae3849e87a19abe56eeff7ba02e25a4b
+  verify-rc-source-cpp-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: cpp
+      github_runner: [self-hosted, macOS, arm64]
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-cpp-macos-arm64
+    commit: 9c265d8672ea801b342c1a745549231ca135962a
+  verify-rc-source-python-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: python
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-python-linux-ubuntu-22.04-amd64
+    commit: c419072f2b12e965bf75969703da793e61c7fdec
+  verify-rc-source-ruby-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: ruby
+      distro: conda
+
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-ruby-linux-conda-latest-amd64
+    commit: 184a7ee3b642cfeec18109f98177735187e252cf
+  verify-rc-source-integration-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: integration
+      distro: conda
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-integration-linux-conda-latest-amd64
+    commit: 5f5a1e888888b578cd6a25d4043b6383090f5a18
+  verify-rc-source-go-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: go
+      distro: conda
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-go-linux-conda-latest-amd64
+    commit: a22d75d62e3e11ca4fe20647aaf29c6a1b2dd978
+  verify-rc-source-go-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: go
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-go-linux-ubuntu-18.04-amd64
+    commit: fbf64b370f4b684c7dcbd9675b33cf129ce9298f
+  verify-rc-source-csharp-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: csharp
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-csharp-macos-amd64
+    commit: 38b6bfeacc09b745705e3b7bc2b14f98647339c1
+  verify-rc-source-cpp-macos-conda-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: cpp
+      use_conda: true
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-cpp-macos-conda-amd64
+    commit: 3b316b7ec83b5ccad55942ed180d6907cb039ff1
+  verify-rc-source-js-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: js
+      github_runner: [self-hosted, macOS, arm64]
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-js-macos-arm64
+    commit: 7b9defa54a662a6172e6a90aec04fecfebe1bdbf
+  verify-rc-source-integration-macos-conda-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: integration
+      use_conda: true
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-integration-macos-conda-amd64
+    commit: ad1929e28081e95dcfcc0c54ee411d3f72bf97db
+  verify-rc-source-csharp-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: csharp
+      distro: almalinux
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-csharp-linux-almalinux-8-amd64
+    commit: cc5daeb4cc52bbc17f340eabb41aaba4c50286c6
+  verify-rc-source-java-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: java
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-java-linux-ubuntu-22.04-amd64
+    commit: 143c6ef30c3bca77b0f9e044b9e4cdb289695844
+  verify-rc-source-integration-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: integration
+      distro: almalinux
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-integration-linux-almalinux-8-amd64
+    commit: 5a529e4fa59304fa881443c368315843c96eda01
+  verify-rc-source-csharp-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: csharp
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-csharp-linux-ubuntu-20.04-amd64
+    commit: e4e4845f9da4eeb9720486dcbf0e2e6407e59438
+  verify-rc-source-js-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: js
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-js-linux-ubuntu-18.04-amd64
+    commit: 44ef86407551adefb8193aeab8512d405c50a530
+  verify-rc-source-python-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: python
+      github_runner: [self-hosted, macOS, arm64]
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-python-macos-arm64
+    commit: b31c00a19a6a805a09f757d91b8b4e74b2627870
+  verify-rc-source-js-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: js
+      distro: almalinux
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-js-linux-almalinux-8-amd64
+    commit: 8f22b7abf947612c55a76d7b5e7143a9b100df76
+  verify-rc-source-cpp-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: cpp
+      distro: conda
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-cpp-linux-conda-latest-amd64
+    commit: d305dee0cc81d2f532365a82a447f8f643bc634d
+  verify-rc-source-cpp-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: cpp
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-cpp-macos-amd64
+    commit: e8ee303cd76bdd4231188d3f59b01c7fb0dfb6b9
+  verify-rc-source-ruby-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: ruby
+      distro: ubuntu
+
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-ruby-linux-ubuntu-20.04-amd64
+    commit: 12d703ac08b7fe7be403c392e93c7fc16dcd0573
+  verify-rc-source-java-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: java
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-java-linux-ubuntu-20.04-amd64
+    commit: 9a813a0fe130efd6467b7688a7266ad7fff15f18
+  verify-rc-source-go-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: go
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-go-linux-ubuntu-22.04-amd64
+    commit: e0c118099e8f8536bdbc31367666088d7fd7a59f
+  verify-rc-source-integration-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: integration
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-integration-linux-ubuntu-18.04-amd64
+    commit: c7983cbcfaff8de75548a4cf452c49cfd2b424f9
+  verify-rc-source-ruby-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: ruby
+      github_runner: [self-hosted, macOS, arm64]
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-ruby-macos-arm64
+    commit: 19835a21464c28e2b6206c44bdb8bb46c064a743
+  verify-rc-source-csharp-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: csharp
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-csharp-linux-ubuntu-18.04-amd64
+    commit: 51470165481537668afc905b00402d2d49f4ee14
+  verify-rc-source-go-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: go
+      distro: almalinux
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-go-linux-almalinux-8-amd64
+    commit: 5c4a9e4524518fc710274fb15d566b5c2f60d593
+  verify-rc-source-java-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: java
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-java-macos-amd64
+    commit: 4882168fece0ba4c1a8de19dd72502b1714a7cd9
+  verify-rc-source-ruby-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: ruby
+      github_runner: macos-10.15
+
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-ruby-macos-amd64
+    commit: 9ccc5133f7c29acb6d4e077e56f01b53ccc50a0b
+  verify-rc-source-java-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: java
+      distro: conda
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-java-linux-conda-latest-amd64
+    commit: c3d4463512e1d22a7ebe559df32474bb60cd9b11
+  verify-rc-source-js-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: js
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-js-linux-ubuntu-22.04-amd64
+    commit: 0a7c0384516776d2d59b6e918189cfdfed62369b
+  verify-rc-source-js-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: js
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-js-linux-ubuntu-20.04-amd64
+    commit: 206e835595593b19373af2c9f0e6092df0ad235c
+  verify-rc-source-csharp-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: csharp
+      github_runner: [self-hosted, macOS, arm64]
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-csharp-macos-arm64
+    commit: 8fc558a606896653fee5652c7cd3ad7156b9a97f
+  verify-rc-source-windows: !Task
+    ci: github
+    template: verify-rc/github.win.yml
+    artifacts: []
+    params:
+      env:
+        PYARROW_TEST_GDB: OFF
+      script: verify-release-candidate.bat
+
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-windows
+    commit: 805894e5eb1ab7857229c02d0fc65a8743389285
+  verify-rc-source-cpp-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: cpp
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-cpp-linux-ubuntu-18.04-amd64
+    commit: e1dd0a16ce72a2e18a833db22daa75fdefabe596
+  verify-rc-source-go-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: go
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-go-linux-ubuntu-20.04-amd64
+    commit: 351dc1c7ec4bfc0b0511e86cd0411ce0e240620a
+  verify-rc-source-python-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: python
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-python-macos-amd64
+    commit: 04cdcccc9770a68ff6c9925a3a85b441f24503f1
+  verify-rc-source-cpp-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: cpp
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-cpp-linux-ubuntu-20.04-amd64
+    commit: f9383a3381f3dc4bef5d43eaa492be98377909d3
+  verify-rc-source-js-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: js
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-js-macos-amd64
+    commit: ba63ade06c52f2acb588c5ecc31530f390e05645
+  verify-rc-source-ruby-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: ruby
+      distro: almalinux
+
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-ruby-linux-almalinux-8-amd64
+    commit: a4f40a55944e9c84f995587cdaae9a1135763707
+  verify-rc-source-cpp-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: cpp
+      distro: almalinux
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-cpp-linux-almalinux-8-amd64
+    commit: f5d862d417b65685484c55be26515db04ffdf571
+  verify-rc-source-integration-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: integration
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-integration-linux-ubuntu-20.04-amd64
+    commit: 8eefb6d0c33e5ebe90440376df682e7012771ba4
+  verify-rc-source-go-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: go
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-go-macos-amd64
+    commit: 133cce9a27e101ffd003b3ff5fbd7b19559b1c48
+  verify-rc-source-js-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: js
+      distro: conda
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-js-linux-conda-latest-amd64
+    commit: 6a832111798ef29fd93a327980561ae2d2fdc7a6
+  verify-rc-source-csharp-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: csharp
+      distro: conda
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-csharp-linux-conda-latest-amd64
+    commit: 4766eaaeb0b7bfeba2a2a1cb06605d730b464bca
+  verify-rc-source-python-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: python
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-python-linux-ubuntu-20.04-amd64
+    commit: b4a45e66218fd22750c73ad53146e27789e2415a
+  verify-rc-source-java-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: java
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-java-linux-ubuntu-18.04-amd64
+    commit: 81f969631cc94403ed2ed6d70c1e60a8d5fffe47
+  verify-rc-source-cpp-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: cpp
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-cpp-linux-ubuntu-22.04-amd64
+    commit: 67cdcb634d3fd6e297033cf2b08aca6d7ae9373d
+  verify-rc-source-python-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: python
+      distro: conda
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-python-linux-conda-latest-amd64
+    commit: 3a89f8a4641668e6c34c7b164ae1b9151aea0288
+  verify-rc-source-python-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: python
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-python-linux-ubuntu-18.04-amd64
+    commit: dd0ee47a43d113ed78d37980d7e9f9161f0d4a03
+  verify-rc-source-csharp-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: csharp
+      distro: ubuntu
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-csharp-linux-ubuntu-22.04-amd64
+    commit: a1dd5a4da39232bf4a78f95d7250eec38599c959
+  verify-rc-source-python-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: python
+      distro: almalinux
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-python-linux-almalinux-8-amd64
+    commit: 70494ae7b88bbe17e6a693be42297450be4c53a6
+  verify-rc-source-ruby-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: ruby
+      distro: ubuntu
+
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-ruby-linux-ubuntu-22.04-amd64
+    commit: 1c1de637f0577d7870569773848d3dc6918f7bc2
+  verify-rc-source-go-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: go
+      github_runner: [self-hosted, macOS, arm64]
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-go-macos-arm64
+    commit: b2788e0f62658f5f5cbc5707777b6ca911d1278f
+  verify-rc-source-integration-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: integration
+      github_runner: macos-10.15
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-integration-macos-amd64
+    commit: aa8b05e52b160a9e477aced057d4e45386cb4f50
+  verify-rc-source-java-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: java
+      distro: almalinux
+    branch: nightly-release-2022-07-04-0-github-verify-rc-source-java-linux-almalinux-8-amd64
+    commit: 26f95c68ec2f91af5a5bd25aede62da88379b0af
+params: {}
+branch: nightly-release-2022-07-04-0
