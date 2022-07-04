@@ -32,6 +32,7 @@ jobs:
     strategy:
       fail-fast: false
     env:
+      NOT_CRAN: TRUE
       R_ORG: "rstudio"
       R_IMAGE: "r-base"
       R_TAG: "latest-focal"
@@ -73,6 +74,8 @@ jobs:
             aws s3 cp $BUCKET/crancache.tar.gz crancache.tar.gz --no-progress
             tar -pzxf crancache.tar.gz -C arrow/
           fi     
+          ls arrow/r
+          ls arrow
       - name: Login to Dockerhub
         uses: docker/login-action@v2
         with:
@@ -89,6 +92,8 @@ jobs:
           BUCKET: "s3://${{ secrets.SCCACHE_BUCKET }}/revdep"
         shell: bash
         run: |
+            ls arrow/r/revdep
+            ls arrow/r/.crancache
             echo "Caching revdep volume."
             tar -pzcf revdep2.tar.gz arrow/r/revdep
             aws s3 cp revdep2.tar.gz ${BUCKET}/revdep2.tar.gz --no-progress 
