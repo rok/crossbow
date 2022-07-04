@@ -1,0 +1,41 @@
+!Job
+target: !Target
+  head: 0a09d22c0d0be40dbf24e3017677b7eef88d7b0b
+  email: unknown
+  branch: arrow-16549
+  remote: https://github.com/vibhatha/arrow.git
+  github_repo: vibhatha/arrow
+  version: 9.0.0.dev281
+  no_rc_version: 9.0.0.dev281
+  no_rc_semver_version: 9.0.0-dev281
+tasks:
+  wheel-macos-big-sur-cp38-arm64: !Task
+    ci: github
+    template: python-wheels/github.osx.arm64.yml
+    artifacts:
+    - pyarrow-9.0.0.dev281-cp38-cp38-macosx_11_0_arm64.whl
+    params:
+      arch: arm64
+      arrow_simd_level: DEFAULT
+      python_version: '3.8'
+      macos_deployment_target: '11.0'
+
+    branch: actions-17830e587b-github-wheel-macos-big-sur-cp38-arm64
+    commit: b410400d44d56330d9ba9ae6147f2b8b41cacf95
+  verify-rc-source-cpp-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: cpp
+      github_runner: [self-hosted, macOS, arm64]
+    branch: actions-17830e587b-github-verify-rc-source-cpp-macos-arm64
+    commit: c269215f8b5f23d94f44b9bb487f15f72cd587a9
+params: {}
+branch: actions-17830e587b
