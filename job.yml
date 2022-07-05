@@ -1,0 +1,38 @@
+!Job
+target: !Target
+  head: 76eda77ce37b846ec076c4ba92860beffad66220
+  email: unknown
+  branch: r-binary-default
+  remote: https://github.com/nealrichardson/arrow.git
+  github_repo: nealrichardson/arrow
+  version: 9.0.0.dev323
+  no_rc_version: 9.0.0.dev323
+  no_rc_semver_version: 9.0.0-dev323
+tasks:
+  test-r-linux-as-cran: !Task
+    ci: github
+    template: r/github.linux.cran.yml
+    artifacts: []
+    params:
+      MATRIX: ${{ matrix.r_image }}
+
+    branch: actions-8c8c741115-github-test-r-linux-as-cran
+    commit: c0453daf129606e571036de14aedd52ea8e0ee2f
+  r-binary-packages: !Task
+    ci: github
+    template: r/github.packages.yml
+    artifacts:
+    - r-lib__libarrow__bin__windows__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__centos-7__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__ubuntu-18.04__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__ubuntu-22.04__arrow-[0-9\.]+\.zip
+    - r-pkg__bin__windows__contrib__4.1__arrow_[0-9\.]+\.zip
+    - r-pkg__bin__windows__contrib__4.2__arrow_[0-9\.]+\.zip
+    - r-pkg__bin__macosx__contrib__4.1__arrow_[0-9\.]+\.tgz
+    - r-pkg__bin__macosx__contrib__4.2__arrow_[0-9\.]+\.tgz
+    - r-pkg__src__contrib__arrow_[0-9\.]+\.tar\.gz
+    params: {}
+    branch: actions-8c8c741115-github-r-binary-packages
+    commit: 201ce693d0d084f7c56d07dd7ba7afefaf9d63c4
+params: {}
+branch: actions-8c8c741115
