@@ -27,78 +27,38 @@ on:
     branches:
       - "*self-hosted-intel-macos*"
 jobs:
-  autobrew:
-    name: "Homebrew + R package"
-    runs-on: ["self-hosted", "macOS", "intel"]
+  test-vcpkg-win:
+    name: Install build deps with vcpkg and build Arrow C++
+    runs-on: ["self-hosted", "Windows"]
     steps:
       - name: Checkout Arrow
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-          path: arrow
-          repository: apache/arrow
-          ref: 6fd4d3423e3f0d597fac547ee74f4ccba2812c8a
-          submodules: recursive
-
-      - name: Configure Homebrew formula for testing
-        env:
-          ARROW_FORMULA: ./arrow/dev/tasks/homebrew-formulae/apache-arrow.rb
         run: |
-          brew update
-          brew --version
-          brew unlink python@2 || true
-          brew config
-          brew doctor || true
-
-          ARROW_GLIB_FORMULA=$(echo ${ARROW_FORMULA} | sed -e 's/\.rb/-glib.rb/')
-          echo "ARROW_GLIB_FORMULA=${ARROW_GLIB_FORMULA}" >> ${GITHUB_ENV}
-          for formula in ${ARROW_FORMULA} ${ARROW_GLIB_FORMULA}; do
-            if [ ! -f ${formula} ]; then
-              continue
-            fi
-            # Pin the current commit in the formula to test so that
-            # we're not always pulling from master
-            sed -i '' -E \
-              -e 's@https://github.com/apache/arrow.git"$@https://github.com/apache/arrow.git", revision: "6fd4d3423e3f0d597fac547ee74f4ccba2812c8a"@' \
-              ${formula}
-            # Sometimes crossbow gives a remote URL with .git and sometimes not.
-            # Make sure there's only one
-            sed -i '' -E -e 's@.git.git@.git@' ${formula}
-            cp ${formula} $(brew --repository homebrew/core)/Formula/
-          done
-
-      - name: Install apache-arrow
+          git clone --no-checkout https://github.com/apache/arrow.git arrow
+          git -C arrow fetch -t https://github.com/apache/arrow.git master
+          git -C arrow checkout FETCH_HEAD
+          git -C arrow submodule update --init --recursive
+      - name: Download Timezone Database
+        shell: bash
+        run: arrow/ci/scripts/download_tz_database.sh
+      - name: Remove and Reinstall vcpkg
+        # When running vcpkg in Github Actions on Windows, remove the
+        # preinstalled vcpkg and install the newest version from source.
+        # Versions of vcpkg rapidly stop working until updated, and
+        # the safest and most reliable way to update vcpkg is simply
+        # to remove and reinstall it.
+        shell: cmd
         run: |
-          brew install -v --HEAD apache-arrow
-          # for testing
-          brew install minio
-      - uses: r-lib/actions/setup-r@v1
-      - name: Install dependencies
+          CALL vcpkg integrate remove 2>NUL
+          CALL C:
+          CALL cd \
+          CALL rmdir /s /q vcpkg 2>NUL
+          CALL git clone https://github.com/microsoft/vcpkg.git vcpkg
+          CALL cd vcpkg
+          CALL bootstrap-vcpkg.bat -win64 -disableMetrics
+          CALL vcpkg integrate install
+          CALL setx PATH "%PATH%;C:\vcpkg"
+      - name: Install Dependencies with vcpkg and Build Arrow C++
+        shell: cmd
         run: |
-          install.packages("remotes")
-          remotes::install_deps("arrow/r", dependencies = TRUE)
-          remotes::install_cran(c("rcmdcheck", "sys", "sessioninfo"))
-        shell: Rscript {0}
-      - name: Session info
-        run: |
-          options(width = 100)
-          pkgs <- installed.packages()[, "Package"]
-          sessioninfo::session_info(pkgs, include_base = TRUE)
-        shell: Rscript {0}
-      - name: Check
-        env:
-          _R_CHECK_CRAN_INCOMING_: false
-          ARROW_R_VERBOSE_TEST: true
-        run: arrow/ci/scripts/r_test.sh arrow
-      - name: Dump install logs
-        run: cat arrow/r/check/arrow.Rcheck/00install.out
-        if: always()
-      - name: Dump test logs
-        run: cat arrow/r/check/arrow.Rcheck/tests/testthat.Rout*
-        if: always()
-      - name: Save the test output
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-output
-          path: arrow/r/check/arrow.Rcheck/tests/testthat.Rout*
+          CALL cd arrow
+          CALL dev\tasks\vcpkg-tests\cpp-build-vcpkg.bat
