@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "revdep-test"
-
 jobs:
   source:
     # This job will change the version to either the custom_version param or YMD format.
@@ -20,7 +19,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: 974b94ea5d2b76927fd214f84a10deaa671109f9
+          ref: be6fdcbd1e4b491f196c4d61bdaac85c3733aca0
           submodules: recursive
 
       - name: Modify version
@@ -37,9 +36,9 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then 
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"974b94ea5d2b76927fd214f84a10deaa671109f9"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"974b94ea5d2b76927fd214f84a10deaa671109f9"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
@@ -87,7 +86,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: 974b94ea5d2b76927fd214f84a10deaa671109f9
+          ref: be6fdcbd1e4b491f196c4d61bdaac85c3733aca0
           submodules: recursive
 
       - name: Modify version
@@ -104,9 +103,9 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then 
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"974b94ea5d2b76927fd214f84a10deaa671109f9"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"974b94ea5d2b76927fd214f84a10deaa671109f9"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
@@ -128,11 +127,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           SCCACHE_BUCKET: ${{ secrets.SCCACHE_BUCKET }}
           SCCACHE_S3_KEY_PREFIX: 'sccache'
-
         run: |
           sudo sysctl -w kernel.core_pattern="core.%e.%p"
           ulimit -c unlimited
-          archery docker run  ${{ matrix.config.os}}-cpp-static
+          archery docker run  -e AWS_SECRET_ACCESS_KEY -e AWS_ACCESS_KEY_ID -e SCCACHE_BUCKET -e SCCACHE_S3_KEY_PREFIX \
+            ${{ matrix.config.os}}-cpp-static
       - name: Bundle libarrow
         shell: bash
         env:
@@ -161,7 +160,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: 974b94ea5d2b76927fd214f84a10deaa671109f9
+          ref: be6fdcbd1e4b491f196c4d61bdaac85c3733aca0
           submodules: recursive
 
       - name: Modify version
@@ -178,9 +177,9 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then 
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"974b94ea5d2b76927fd214f84a10deaa671109f9"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"974b94ea5d2b76927fd214f84a10deaa671109f9"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
@@ -428,81 +427,3 @@ jobs:
           # Our Version should always be > CRAN so we would detect a CRAN version here.
           stopifnot(packageVersion("arrow") == "${{needs.source.outputs.pkg_version}}")
 
-
-  test-source:
-    needs: source
-    name: Test linux source build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          install-r: false
-      - name: Setup local repo
-        shell: bash
-        run: mkdir repo 
-      - name: Get src pkg
-        uses: actions/download-artifact@v3
-        with:
-          name: r-pkg__src__contrib
-          path: repo/src/contrib
-      - name: Update repo index
-        shell: Rscript {0}
-        run: |
-          # getwd() is necessary as this macro is used within jobs using a docker container
-          tools::write_PACKAGES(file.path(getwd(), "repo/src/contrib", fsep = "/"), type = "source", verbose = TRUE)
-      - name: Show repo 
-        shell: bash 
-        # tree not available in git-bash on windows
-        run: |
-          ls -R repo
-      - name: Add dev repo to .Rprofile
-        shell: Rscript {0}
-        run: |
-          str <- paste0("options(arrow.dev_repo ='file://", getwd(), "/repo' )")
-          print(str)
-          profile_path <- file.path(getwd(), ".Rprofile")
-          write(str, file = profile_path, append = TRUE)
-          # Set envvar for later steps by appending to $GITHUB_ENV 
-          write(paste0("R_PROFILE_USER=", profile_path), file = Sys.getenv("GITHUB_ENV"), append = TRUE)
-
-      - name: Install arrow from nightly repo
-        env:
-          # Test source build so be sure not to download a binary
-          LIBARROW_BINARY: "FALSE"
-        shell: Rscript {0}
-        run: |
-          source("https://raw.githubusercontent.com/apache/arrow/master/ci/etc/rprofile")
-          
-          install.packages(
-            "arrow",
-            repos = c(getOption("arrow.dev_repo"), "https://cloud.r-project.org"),
-            verbose = TRUE
-          )
-          
-          library(arrow)
-          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
-
-          # Our Version should always be > CRAN so we would detect a CRAN version here.
-          stopifnot(packageVersion("arrow") == "${{needs.source.outputs.pkg_version}}")
-
-
-      - name: Retry with verbosity if that failed
-        if: failure()
-        env:
-          LIBARROW_BINARY: "FALSE"
-          ARROW_R_DEV: "TRUE"
-        run: |
-          source("https://raw.githubusercontent.com/apache/arrow/master/ci/etc/rprofile")
-          
-          install.packages(
-            "arrow",
-            repos = c(getOption("arrow.dev_repo"), "https://cloud.r-project.org"),
-            verbose = TRUE
-          )
-          
-          library(arrow)
-          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
-
-          # Our Version should always be > CRAN so we would detect a CRAN version here.
-          stopifnot(packageVersion("arrow") == "${{needs.source.outputs.pkg_version}}")
