@@ -123,14 +123,13 @@ jobs:
         shell: bash
         env:
           UBUNTU: ${{ matrix.config.version}}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          SCCACHE_BUCKET: ${{ secrets.SCCACHE_BUCKET }}
-          SCCACHE_S3_KEY_PREFIX: 'sccache'
+          KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          BUCKET: ${{ secrets.SCCACHE_BUCKET }}
         run: |
           sudo sysctl -w kernel.core_pattern="core.%e.%p"
           ulimit -c unlimited
-          archery docker run  -e AWS_SECRET_ACCESS_KEY -e AWS_ACCESS_KEY_ID -e SCCACHE_BUCKET -e SCCACHE_S3_KEY_PREFIX ${{ matrix.config.os}}-cpp-static
+          archery docker run  -e AWS_SECRET_ACCESS_KEY=$KEY -e AWS_ACCESS_KEY_ID=$ID -e SCCACHE_BUCKET=$BUCKET -e SCCACHE_S3_KEY_PREFIX=sccache ${{ matrix.config.os}}-cpp-static
       - name: Bundle libarrow
         shell: bash
         env:
