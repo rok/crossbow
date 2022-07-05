@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: be6fdcbd1e4b491f196c4d61bdaac85c3733aca0
+          ref: sccache
           submodules: recursive
 
       - name: Modify version
@@ -36,9 +36,9 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then 
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"sccache"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"sccache"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
@@ -86,7 +86,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: be6fdcbd1e4b491f196c4d61bdaac85c3733aca0
+          ref: sccache
           submodules: recursive
 
       - name: Modify version
@@ -103,9 +103,9 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then 
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"sccache"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"sccache"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
@@ -158,7 +158,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: be6fdcbd1e4b491f196c4d61bdaac85c3733aca0
+          ref: sccache
           submodules: recursive
 
       - name: Modify version
@@ -175,13 +175,27 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then 
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"sccache"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"be6fdcbd1e4b491f196c4d61bdaac85c3733aca0"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"sccache"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
+      - name: Get sccache
+        shell: bash
+        run: |
+          SCCACHE_BUILD=pc-windows-msvc
+          SCCACHE_URL="https://github.com/mozilla/sccache/releases/download/v0.3.0/sccache-v0.3.0-x86_64-$SCCACHE_BUILD.tar.gz"
 
+          # Download archive and checksum
+          wget $SCCACHE_URL $SCCACHE_URL.sha256
+
+          SCCACHE_ARCHIVE=$(echo *$SCCACHE_BUILD.tar.gz)
+          echo "$(cat $SCCACHE_ARCHIVE.sha256) $SCCACHE_ARCHIVE" | sha256sum --check --status
+
+          mkdir -p sccache
+          tar -xzvf $SCCACHE_ARCHIVE --directory sccache/
+          echo "$(pwd)/sccache" >> $GITHUB_PATH
       - uses: r-lib/actions/setup-r@v2
         with:
           rtools-version: 40
