@@ -1,0 +1,38 @@
+!Job
+target: !Target
+  head: 2e1779e3fd670b5d9f657daeb1398244d3ebf1f1
+  email: unknown
+  branch: r-binary-default
+  remote: https://github.com/nealrichardson/arrow.git
+  github_repo: nealrichardson/arrow
+  version: 9.0.0.dev322
+  no_rc_version: 9.0.0.dev322
+  no_rc_semver_version: 9.0.0-dev322
+tasks:
+  r-binary-packages: !Task
+    ci: github
+    template: r/github.packages.yml
+    artifacts:
+    - r-lib__libarrow__bin__windows__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__centos-7__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__ubuntu-18.04__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__ubuntu-22.04__arrow-[0-9\.]+\.zip
+    - r-pkg__bin__windows__contrib__4.1__arrow_[0-9\.]+\.zip
+    - r-pkg__bin__windows__contrib__4.2__arrow_[0-9\.]+\.zip
+    - r-pkg__bin__macosx__contrib__4.1__arrow_[0-9\.]+\.tgz
+    - r-pkg__bin__macosx__contrib__4.2__arrow_[0-9\.]+\.tgz
+    - r-pkg__src__contrib__arrow_[0-9\.]+\.tar\.gz
+    params: {}
+    branch: actions-c61d16cfd9-github-r-binary-packages
+    commit: 7230e36eba0f53c539bcc67edf2d90bd4368d213
+  test-r-linux-as-cran: !Task
+    ci: github
+    template: r/github.linux.cran.yml
+    artifacts: []
+    params:
+      MATRIX: ${{ matrix.r_image }}
+
+    branch: actions-c61d16cfd9-github-test-r-linux-as-cran
+    commit: 345c9fdd9a71eb3f4ea1cbabd26010c7344aa214
+params: {}
+branch: actions-c61d16cfd9
