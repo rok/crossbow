@@ -1,0 +1,76 @@
+!Job
+target: !Target
+  head: 57736fb9b1f65c3e10a218cbffd1ed17858b9c33
+  email: unknown
+  branch: ARROW-17018
+  remote: https://github.com/cpcloud/arrow.git
+  github_repo: cpcloud/arrow
+  version: 8.0.0.dev3
+  no_rc_version: 8.0.0.dev3
+  no_rc_semver_version: 8.0.0-dev3
+tasks:
+  test-conda-python-3.7-pandas-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.7'
+        PANDAS: latest
+        NUMPY: latest
+      image: conda-python-pandas
+    branch: actions-a27297df5b-github-test-conda-python-3.7-pandas-latest
+    commit: 15f2da52317f43961619e16618520f73edda889d
+  test-conda-python-3.8-pandas-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.8'
+        PANDAS: latest
+        NUMPY: latest
+      image: conda-python-pandas
+    branch: actions-a27297df5b-github-test-conda-python-3.8-pandas-latest
+    commit: e18d6863bd5171347f929af3ae84a9b5d5fa6ef6
+  test-conda-python-3.9-pandas-master: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.9'
+        PANDAS: master
+        NUMPY: nightly
+      image: conda-python-pandas
+
+    branch: actions-a27297df5b-github-test-conda-python-3.9-pandas-master
+    commit: c06f2da3c27e5fe362736d1703c53c90b955bfc0
+  test-conda-python-3.7-pandas-0.24: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.7'
+        PANDAS: '0.24'
+        NUMPY: '1.19'
+      # use the latest pandas release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-pandas
+    branch: actions-a27297df5b-github-test-conda-python-3.7-pandas-0.24
+    commit: 4b9f09aac70d92b4e34eaa0848c55f69e43df4f9
+  test-conda-python-3.8-pandas-nightly: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.8'
+        PANDAS: nightly
+        NUMPY: nightly
+      image: conda-python-pandas
+    branch: actions-a27297df5b-github-test-conda-python-3.8-pandas-nightly
+    commit: 56fd5e52d5fad366d210608f521f1fd67c9ff46a
+params: {}
+branch: actions-a27297df5b
