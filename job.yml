@@ -1,0 +1,102 @@
+!Job
+target: !Target
+  head: 67e676d219de449e7bd500ffcdc12d39271fd74f
+  email: unknown
+  branch: Fix16978
+  remote: https://github.com/eerhardt/arrow.git
+  github_repo: eerhardt/arrow
+  version: 9.0.0.dev363
+  no_rc_version: 9.0.0.dev363
+  no_rc_semver_version: 9.0.0-dev363
+tasks:
+  verify-rc-source-integration-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: integration
+      github_runner: [self-hosted, macOS, arm64]
+    branch: actions-c4a1a03e27-github-verify-rc-source-integration-macos-arm64
+    commit: face91a8b890216975bbb516b804d777611dfb6c
+  verify-rc-source-integration-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: integration
+      distro: almalinux
+    branch: actions-c4a1a03e27-github-verify-rc-source-integration-linux-almalinux-8-amd64
+    commit: cfecb74bd345f5744249d00e808c5859bd43b97a
+  verify-rc-source-integration-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: integration
+      distro: ubuntu
+    branch: actions-c4a1a03e27-github-verify-rc-source-integration-linux-ubuntu-20.04-amd64
+    commit: 3d410dd8eee43106d82aec4fcc6f318a354dea68
+  verify-rc-source-integration-macos-conda-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: integration
+      use_conda: true
+      github_runner: macos-10.15
+    branch: actions-c4a1a03e27-github-verify-rc-source-integration-macos-conda-amd64
+    commit: 17bdd71cc9f8d52d2c43d827d1ddfdf24d329195
+  verify-rc-source-integration-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: integration
+      distro: conda
+    branch: actions-c4a1a03e27-github-verify-rc-source-integration-linux-conda-latest-amd64
+    commit: 015955c3158c3efd1dd32025c2c0c9443d3cd609
+  verify-rc-source-integration-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: integration
+      distro: ubuntu
+    branch: actions-c4a1a03e27-github-verify-rc-source-integration-linux-ubuntu-18.04-amd64
+    commit: 2bedad2356aed8da68c7a1602bd5f80a3f8b97d3
+  verify-rc-source-integration-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: integration
+      github_runner: macos-10.15
+    branch: actions-c4a1a03e27-github-verify-rc-source-integration-macos-amd64
+    commit: da329cce489344cd7660424eb27ff0568c73e976
+  verify-rc-source-integration-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: integration
+      distro: ubuntu
+    branch: actions-c4a1a03e27-github-verify-rc-source-integration-linux-ubuntu-22.04-amd64
+    commit: b236de63d0aaee6f4617ca94fad04212cdcdcdd5
+params: {}
+branch: actions-c4a1a03e27
