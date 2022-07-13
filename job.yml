@@ -1,0 +1,28 @@
+!Job
+target: !Target
+  head: e80016f1409f801dbb99c13a7c70f91519f19699
+  email: unknown
+  branch: ARROW-16734
+  remote: https://github.com/raulcd/arrow.git
+  github_repo: raulcd/arrow
+  version: 9.0.0.dev389
+  no_rc_version: 9.0.0.dev389
+  no_rc_semver_version: 9.0.0-dev389
+tasks:
+  test-ubuntu-20.04-cpp-thread-sanitizer: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        # clang-tools and llvm version need to be synchronized so as
+        # to have the right llvm-symbolizer version
+        CLANG_TOOLS: 11
+        LLVM: 11
+        UBUNTU: 20.04
+      image: ubuntu-cpp-thread-sanitizer
+
+    branch: actions-33d6602cc3-github-test-ubuntu-20.04-cpp-thread-sanitizer
+    commit: fbeaf1df323c8b0399c7a996de885d69e4e7904d
+params: {}
+branch: actions-33d6602cc3
