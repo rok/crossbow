@@ -1,0 +1,81 @@
+!Job
+target: !Target
+  head: 072ae55dc8172bb1a898fda5d5a83ec063b05a6d
+  email: unknown
+  branch: release-7.0.1-rc0
+  remote: https://github.com/apache/arrow.git
+  github_repo: apache/arrow
+  version: 8.0.1.dev0
+  no_rc_version: 8.0.1.dev0
+  no_rc_semver_version: 8.0.1-dev0
+tasks:
+  verify-rc-source-go-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: >-
+        -e TEST_DEFAULT=0
+        -e TEST_GO=1
+      image: ubuntu-verify-rc-source
+
+    branch: actions-dfd6d6ff99-github-verify-rc-source-go-linux-ubuntu-18.04-amd64
+    commit: 7f02b69317d28ad452c78a866968cbab9753a39a
+  verify-rc-source-go-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      env:
+        TEST_DEFAULT: 0
+        TEST_GO: 1
+      artifact: source
+      github_runner: macos-10.15
+
+    branch: actions-dfd6d6ff99-github-verify-rc-source-go-macos-amd64
+    commit: af3282838c9e0c6cf22031daaa75f41922185d5b
+  verify-rc-source-go-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: >-
+        -e TEST_DEFAULT=0
+        -e TEST_GO=1
+      image: ubuntu-verify-rc-source
+
+    branch: actions-dfd6d6ff99-github-verify-rc-source-go-linux-ubuntu-20.04-amd64
+    commit: 7f02b69317d28ad452c78a866968cbab9753a39a
+  verify-rc-source-go-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: >-
+        -e TEST_DEFAULT=0
+        -e TEST_GO=1
+      image: almalinux-verify-rc-source
+
+    branch: actions-dfd6d6ff99-github-verify-rc-source-go-linux-almalinux-8-amd64
+    commit: f1b1c9310f195ca30d0d13d7eef349e9172dd4c6
+  verify-rc-source-go-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_DEFAULT: 0
+        TEST_INTEGRATION_JAVA: 0
+        TEST_GO: 1
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      artifact: source
+      github_runner: self-hosted
+
+    branch: actions-dfd6d6ff99-github-verify-rc-source-go-macos-arm64
+    commit: 5aae96fe4961e589ea6f6aa90ffc34cb609e5e36
+params:
+  release: 7.0.1
+  rc: '0'
+branch: actions-dfd6d6ff99
