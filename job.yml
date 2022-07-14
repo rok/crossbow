@@ -1,0 +1,94 @@
+!Job
+target: !Target
+  head: 9966c39583f1e203bac9200753e9db32478d43a6
+  email: unknown
+  branch: release-8.0.1-rc0
+  remote: https://github.com/apache/arrow.git
+  github_repo: apache/arrow
+  version: 9.0.1.dev0
+  no_rc_version: 9.0.1.dev0
+  no_rc_semver_version: 9.0.1-dev0
+tasks:
+  verify-rc-source-go-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: go
+      distro: conda
+    branch: actions-c6156aada0-github-verify-rc-source-go-linux-conda-latest-amd64
+    commit: 9b55959765c14a9cebb3a84fe722ec5189620540
+  verify-rc-source-go-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: go
+      distro: almalinux
+    branch: actions-c6156aada0-github-verify-rc-source-go-linux-almalinux-8-amd64
+    commit: ed64ac752bc11d332c73be24442f3d9fd414cd99
+  verify-rc-source-go-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: go
+      distro: ubuntu
+    branch: actions-c6156aada0-github-verify-rc-source-go-linux-ubuntu-20.04-amd64
+    commit: 0f48861185d6aec2adab805612396bf96d7003f1
+  verify-rc-source-go-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: go
+      distro: ubuntu
+    branch: actions-c6156aada0-github-verify-rc-source-go-linux-ubuntu-18.04-amd64
+    commit: e32fee3a3f21d9fd589a6e6e4b7120776714f1dc
+  verify-rc-source-go-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: go
+      github_runner: macos-10.15
+    branch: actions-c6156aada0-github-verify-rc-source-go-macos-amd64
+    commit: bf0b87de15aebe45c9013ffd25d0cc63ec0f53b7
+  verify-rc-source-go-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: go
+      distro: ubuntu
+    branch: actions-c6156aada0-github-verify-rc-source-go-linux-ubuntu-22.04-amd64
+    commit: e382e9065b119b7e28c100e12462d10d4536960f
+  verify-rc-source-go-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: go
+      github_runner: self-hosted
+    branch: actions-c6156aada0-github-verify-rc-source-go-macos-arm64
+    commit: 7201dc4c3b2aa8a5e93e156cd570b3be6b3ed9e4
+params:
+  release: 8.0.1
+  rc: '0'
+branch: actions-c6156aada0
