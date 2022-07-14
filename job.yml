@@ -1,0 +1,46 @@
+!Job
+target: !Target
+  head: 16e276c2f465cf41c2c12b9f61037e0fe67ad906
+  email: unknown
+  branch: glimpse-fixes
+  remote: https://github.com/nealrichardson/arrow.git
+  github_repo: nealrichardson/arrow
+  version: 9.0.0.dev396
+  no_rc_version: 9.0.0.dev396
+  no_rc_semver_version: 9.0.0-dev396
+tasks:
+  test-r-minimal-build: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e LIBARROW_MINIMAL=TRUE
+
+    branch: actions-b38f1ccd1a-azure-test-r-minimal-build
+    commit: 0cad304df59f3bbba6bdae94d40a5379c9c3c951
+  test-r-offline-minimal: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e TEST_OFFLINE_BUILD=true
+
+    branch: actions-b38f1ccd1a-azure-test-r-offline-minimal
+    commit: 7eceeea12c93018c94fad1140a896ebf54bcd4d4
+  test-r-versions: !Task
+    ci: github
+    template: r/github.linux.versions.yml
+    artifacts: []
+    params:
+      MATRIX: ${{ matrix.r_version }}
+
+    branch: actions-b38f1ccd1a-github-test-r-versions
+    commit: a2454bb0a9edb0f319d75a157083a89b99245fb7
+params: {}
+branch: actions-b38f1ccd1a
