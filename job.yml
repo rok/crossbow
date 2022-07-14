@@ -1,0 +1,60 @@
+!Job
+target: !Target
+  head: 3ea5af64865f9910d3c98162c7949af8d63ec68e
+  email: unknown
+  branch: release-6.0.2-rc0
+  remote: https://github.com/apache/arrow.git
+  github_repo: apache/arrow
+  version: 7.0.2.dev0
+  no_rc_version: 7.0.2.dev0
+  no_rc_semver_version: 7.0.2-dev0
+tasks:
+  verify-rc-source-go-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        INSTALL_NODE: 0
+        TEST_DEFAULT: 0
+        TEST_INTEGRATION_JAVA: 0
+        TEST_GO: 1
+      artifact: source
+      github_runner: self-hosted
+
+    branch: actions-d0acf854f7-github-verify-rc-source-go-macos-arm64
+    commit: 0d9318d509b03ce3d200a4d10af4ce318fa3bd8f
+  verify-rc-source-go-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      env:
+        INSTALL_NODE: 0
+        TEST_DEFAULT: 0
+        TEST_GO: 1
+      artifact: source
+      github_runner: macos-10.15
+
+    branch: actions-d0acf854f7-github-verify-rc-source-go-macos-amd64
+    commit: 97d68fbe37b5213c51c082213ccba90ece0610d7
+  verify-rc-source-go-linux-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.yml
+    artifacts: []
+    params:
+      env:
+        INSTALL_NODE: 0
+        TEST_DEFAULT: 0
+        TEST_GO: 1
+      artifact: source
+      github_runner: ubuntu-20.04
+
+    branch: actions-d0acf854f7-github-verify-rc-source-go-linux-amd64
+    commit: 724d3bed2849b5839317dff5b16c5f39859f0303
+params:
+  release: 6.0.2
+  rc: '0'
+branch: actions-d0acf854f7
