@@ -1,0 +1,34 @@
+!Job
+target: !Target
+  head: ac316ee0d748a73114ff9166edd3c045d1c210da
+  email: unknown
+  branch: allow_namespacing
+  remote: https://github.com/dragosmg/arrow.git
+  github_repo: dragosmg/arrow
+  version: 9.0.0.dev528
+  no_rc_version: 9.0.0.dev528
+  no_rc_semver_version: 9.0.0-dev528
+tasks:
+  test-r-versions: !Task
+    ci: github
+    template: r/github.linux.versions.yml
+    artifacts: []
+    params:
+      MATRIX: ${{ matrix.r_version }}
+
+    branch: actions-6a3852ff25-github-test-r-versions
+    commit: 36a2d29d17331ecf8feec0869227c2fee377622e
+  test-r-minimal-build: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e LIBARROW_MINIMAL=TRUE
+
+    branch: actions-6a3852ff25-azure-test-r-minimal-build
+    commit: 2b7abf4dc994f4ea43d6fe5a791880bc54004c7c
+params: {}
+branch: actions-6a3852ff25
