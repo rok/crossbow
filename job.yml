@@ -1,0 +1,28 @@
+!Job
+target: !Target
+  head: ed29949ec3316a97a9c629433c3f9bac96e00a9e
+  email: unknown
+  branch: bugfix/ARROW-17087--scanner-race-condition
+  remote: https://github.com/westonpace/arrow.git
+  github_repo: westonpace/arrow
+  version: 9.0.0.dev426
+  no_rc_version: 9.0.0.dev426
+  no_rc_semver_version: 9.0.0-dev426
+tasks:
+  test-ubuntu-20.04-cpp-thread-sanitizer: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        # clang-tools and llvm version need to be synchronized so as
+        # to have the right llvm-symbolizer version
+        CLANG_TOOLS: 11
+        LLVM: 11
+        UBUNTU: 20.04
+      image: ubuntu-cpp-thread-sanitizer
+
+    branch: actions-105d119606-github-test-ubuntu-20.04-cpp-thread-sanitizer
+    commit: 800fd66ccc8dc9b517bc4f9f424075ad21f9b509
+params: {}
+branch: actions-105d119606
