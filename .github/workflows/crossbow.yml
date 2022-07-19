@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: cd1926268c1c2ac92b6cf12919c64090393dac2a
+          ref: a7fcf22b0f84ba58920d279a254cbae479a5ac8e
           submodules: recursive
 
       - name: Modify version
@@ -64,9 +64,9 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"cd1926268c1c2ac92b6cf12919c64090393dac2a"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"a7fcf22b0f84ba58920d279a254cbae479a5ac8e"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"cd1926268c1c2ac92b6cf12919c64090393dac2a"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"a7fcf22b0f84ba58920d279a254cbae479a5ac8e"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
@@ -114,7 +114,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: cd1926268c1c2ac92b6cf12919c64090393dac2a
+          ref: a7fcf22b0f84ba58920d279a254cbae479a5ac8e
           submodules: recursive
 
       - name: Modify version
@@ -131,9 +131,9 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"cd1926268c1c2ac92b6cf12919c64090393dac2a"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"a7fcf22b0f84ba58920d279a254cbae479a5ac8e"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"cd1926268c1c2ac92b6cf12919c64090393dac2a"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"a7fcf22b0f84ba58920d279a254cbae479a5ac8e"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
@@ -173,6 +173,17 @@ jobs:
           cd arrow/r/libarrow/dist
           # These files were created by the docker user so we have to sudo to get them
           sudo -E zip -r $PKG_FILE lib/ include/
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker Image
+        shell: bash
+        env:
+          UBUNTU: ${{ matrix.config.version }}
+        run: archery docker push  ${{ matrix.config.os}}-cpp-static
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v3
@@ -192,7 +203,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: cd1926268c1c2ac92b6cf12919c64090393dac2a
+          ref: a7fcf22b0f84ba58920d279a254cbae479a5ac8e
           submodules: recursive
 
       - name: Modify version
@@ -209,9 +220,9 @@ jobs:
           # Pin the git commit in the formula to match
           cd tools
           if [ "true" == "true" ]; then
-            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"cd1926268c1c2ac92b6cf12919c64090393dac2a"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/apache\/arrow.git"$/assignUser\/arrow.git", :revision => "'"a7fcf22b0f84ba58920d279a254cbae479a5ac8e"'"/' apache-arrow.rb
           else
-            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"cd1926268c1c2ac92b6cf12919c64090393dac2a"'"/' apache-arrow.rb
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"a7fcf22b0f84ba58920d279a254cbae479a5ac8e"'"/' apache-arrow.rb
           fi
           rm -f apache-arrow.rb.bak
 
@@ -393,7 +404,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: cd1926268c1c2ac92b6cf12919c64090393dac2a
+          ref: a7fcf22b0f84ba58920d279a254cbae479a5ac8e
           submodules: False
 
       - name: Install system requirements
@@ -581,7 +592,7 @@ jobs:
           fetch-depth: 1
           path: arrow
           repository: assignUser/arrow
-          ref: cd1926268c1c2ac92b6cf12919c64090393dac2a
+          ref: a7fcf22b0f84ba58920d279a254cbae479a5ac8e
           submodules: recursive
 
       - name: Download Artifacts
@@ -612,10 +623,11 @@ jobs:
         run: |
           archery crossbow \
           --queue-path $(pwd) \
-          --queue-remote https://github.com/ursacomputing/crossbow \
+          --queue-remote https://github.com/org/crossbow \
           upload-artifacts \
-          --sha actions-fa4002462d-github-r-binary-packages \
-          --tag actions-fa4002462d-github-r-binary-packages \
+          --sha None \
+          --tag None \
           "binaries/r-*"
         env:
           CROSSBOW_GITHUB_TOKEN: ${{ secrets.CROSSBOW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+
