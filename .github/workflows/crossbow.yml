@@ -528,7 +528,10 @@ jobs:
 
       - name: Install sccache
         shell: bash
-        run: arrow/ci/scripts/install_sccache.sh unknown-linux-musl
+        run: |
+          curl -s \
+            https://raw.githubusercontent.com/assignUser/arrow/a7fcf22b0f84ba58920d279a254cbae479a5ac8e/ci/scripts/install_sccache.sh | \
+            bash -s unknown-linux-musl
       - run: sudo apt update && sudo apt install libcurl4-openssl-dev
       - name: Install arrow from nightly repo
         env:
