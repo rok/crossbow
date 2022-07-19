@@ -1,0 +1,59 @@
+!Job
+target: !Target
+  head: e0fc21814d244d7d92d8b738cb677fc6e4049406
+  email: unknown
+  branch: ARROW-17001-Use-apache-artifactory-for-libarrow-bina
+  remote: https://github.com/assignUser/arrow.git
+  github_repo: assignUser/arrow
+  version: 9.0.0.dev436
+  no_rc_version: 9.0.0.dev436
+  no_rc_semver_version: 9.0.0-dev436
+tasks:
+  test-r-linux-as-cran: !Task
+    ci: github
+    template: r/github.linux.cran.yml
+    artifacts: []
+    params:
+      MATRIX: ${{ matrix.r_image }}
+
+    branch: actions-43164aaf14-github-test-r-linux-as-cran
+    commit: 0b62cd2f444723029f042c800bac523f300d1935
+  r-binary-packages: !Task
+    ci: github
+    template: r/github.packages.yml
+    artifacts:
+    - r-lib__libarrow__bin__windows__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__centos-7__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__ubuntu-18.04__arrow-[0-9\.]+\.zip
+    - r-lib__libarrow__bin__ubuntu-22.04__arrow-[0-9\.]+\.zip
+    - r-pkg__bin__windows__contrib__4.1__arrow_[0-9\.]+\.zip
+    - r-pkg__bin__windows__contrib__4.2__arrow_[0-9\.]+\.zip
+    - r-pkg__bin__macosx__contrib__4.1__arrow_[0-9\.]+\.tgz
+    - r-pkg__bin__macosx__contrib__4.2__arrow_[0-9\.]+\.tgz
+    - r-pkg__src__contrib__arrow_[0-9\.]+\.tar\.gz
+    params: {}
+    branch: actions-43164aaf14-github-r-binary-packages
+    commit: 1f3097b5712893e571325511a426849b9b3ec986
+  test-r-versions: !Task
+    ci: github
+    template: r/github.linux.versions.yml
+    artifacts: []
+    params:
+      MATRIX: ${{ matrix.r_version }}
+
+    branch: actions-43164aaf14-github-test-r-versions
+    commit: a92e3779092147fea2d5fffcff3ef2322fa098a2
+  test-r-offline-minimal: !Task
+    ci: azure
+    template: r/azure.linux.yml
+    artifacts: []
+    params:
+      r_org: rocker
+      r_image: r-base
+      r_tag: latest
+      flags: -e TEST_OFFLINE_BUILD=true
+
+    branch: actions-43164aaf14-azure-test-r-offline-minimal
+    commit: a14aebcaf8b5e7430292eba3345e5df99dc0a12a
+params: {}
+branch: actions-43164aaf14
