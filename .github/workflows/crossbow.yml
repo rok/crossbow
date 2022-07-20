@@ -1,0 +1,587 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+
+# This allows us to set a custom version via param:
+# crossbow submit --param custom_version=8.5.3 r-binary-packages
+# if the param is unset defaults to the usual Ymd naming scheme
+# We need this as boolean and string
+# use filter to cast to string and convert to lowercase to match yaml boolean
+
+
+# NOTE: must set "Crossbow" as name to have the badge links working in the
+# github comment reports!
+name: Crossbow
+on:
+  push:
+    branches:
+      - "*-github-*"
+
+
+jobs:
+  source:
+    # This job will change the version to either the custom_version param or YMD format.
+    # The output allows other steps to use the exact version to prevent issues (e.g. date changes during run)
+    name: Source Package
+    runs-on: ubuntu-latest
+    outputs:
+      pkg_version: ${{ steps.save-version.outputs.pkg_version }}
+    steps:
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: apache/arrow
+          ref: 0330353a93eff799616bf66e0e994236393458f7
+          submodules: recursive
+
+      - name: Modify version
+        shell: bash
+        run: |
+          cd arrow/r
+          sed -i.bak -E -e \
+            's/(^Version: )([0-9]+\.[0-9]+\.[0-9]+).*$/\1\2.'"$(date +%Y%m%d)"'/' \
+            DESCRIPTION
+          head DESCRIPTION
+          rm -f DESCRIPTION.bak
+          cp ../dev/tasks/homebrew-formulae/autobrew/apache-arrow.rb tools/apache-arrow.rb
+
+          # Pin the git commit in the formula to match
+          cd tools
+          if [ "false" == "true" ]; then
+            sed -i.bak -E -e 's/apache\/arrow.git"$/apache\/arrow.git", :revision => "'"0330353a93eff799616bf66e0e994236393458f7"'"/' apache-arrow.rb
+          else
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"0330353a93eff799616bf66e0e994236393458f7"'"/' apache-arrow.rb
+          fi
+          rm -f apache-arrow.rb.bak
+
+      - name: Save Version
+        id: save-version
+        shell: bash
+        run: |
+          echo "::set-output name=pkg_version::$(grep ^Version arrow/r/DESCRIPTION | sed s/Version:\ //)"
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          install-r: false
+
+      - name: Build R source package
+        shell: bash
+        run: |
+          cd arrow/r
+          # Copy in the Arrow C++ source
+          make sync-cpp
+          R CMD build --no-build-vignettes .
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: r-pkg__src__contrib
+          path: arrow/r/arrow_*.tar.gz
+
+  linux-cpp:
+    name: C++ Binary ${{ matrix.config.os }}-${{ matrix.config.version }}
+    runs-on: ubuntu-latest
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu, version: "18.04" }
+          - { os: ubuntu, version: "22.04" }
+          - { os: centos, version: "7" }
+    env:
+      UBUNTU: ${{ matrix.config.version }}
+    steps:
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: apache/arrow
+          ref: 0330353a93eff799616bf66e0e994236393458f7
+          submodules: recursive
+
+      - name: Modify version
+        shell: bash
+        run: |
+          cd arrow/r
+          sed -i.bak -E -e \
+            's/(^Version: )([0-9]+\.[0-9]+\.[0-9]+).*$/\1${{ needs.source.outputs.pkg_version }}/' \
+            DESCRIPTION
+          head DESCRIPTION
+          rm -f DESCRIPTION.bak
+          cp ../dev/tasks/homebrew-formulae/autobrew/apache-arrow.rb tools/apache-arrow.rb
+
+          # Pin the git commit in the formula to match
+          cd tools
+          if [ "false" == "true" ]; then
+            sed -i.bak -E -e 's/apache\/arrow.git"$/apache\/arrow.git", :revision => "'"0330353a93eff799616bf66e0e994236393458f7"'"/' apache-arrow.rb
+          else
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"0330353a93eff799616bf66e0e994236393458f7"'"/' apache-arrow.rb
+          fi
+          rm -f apache-arrow.rb.bak
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          cache: 'pip'
+          python-version: 3.8
+      - name: Install Archery
+        shell: bash
+        run: pip install -e arrow/dev/archery[all]
+
+      - name: Build libarrow
+        shell: bash
+        env:
+          UBUNTU: ${{ matrix.config.version}}
+        run: |
+          sudo sysctl -w kernel.core_pattern="core.%e.%p"
+          ulimit -c unlimited
+          archery docker run  ${{ matrix.config.os}}-cpp-static
+      - name: Bundle libarrow
+        shell: bash
+        env:
+          PKG_FILE: arrow-${{ needs.source.outputs.pkg_version }}.zip
+          VERSION: ${{ needs.source.outputs.pkg_version }}
+        run: |
+          cd arrow/r/libarrow/dist
+          # These files were created by the docker user so we have to sudo to get them
+          sudo -E zip -r $PKG_FILE lib/ include/
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: r-lib__libarrow__bin__${{ matrix.config.os}}-${{ matrix.config.version}}
+          path: arrow/r/libarrow/dist/arrow-*.zip
+
+  windows-cpp:
+    name: C++ Binary Windows RTools (40 only)
+    needs: source
+    runs-on: windows-latest
+    steps:
+      - run: git config --global core.autocrlf false
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: apache/arrow
+          ref: 0330353a93eff799616bf66e0e994236393458f7
+          submodules: recursive
+
+      - name: Modify version
+        shell: bash
+        run: |
+          cd arrow/r
+          sed -i.bak -E -e \
+            's/(^Version: )([0-9]+\.[0-9]+\.[0-9]+).*$/\1${{ needs.source.outputs.pkg_version }}/' \
+            DESCRIPTION
+          head DESCRIPTION
+          rm -f DESCRIPTION.bak
+          cp ../dev/tasks/homebrew-formulae/autobrew/apache-arrow.rb tools/apache-arrow.rb
+
+          # Pin the git commit in the formula to match
+          cd tools
+          if [ "false" == "true" ]; then
+            sed -i.bak -E -e 's/apache\/arrow.git"$/apache\/arrow.git", :revision => "'"0330353a93eff799616bf66e0e994236393458f7"'"/' apache-arrow.rb
+          else
+            sed -i.bak -E -e 's/arrow.git"$/arrow.git", :revision => "'"0330353a93eff799616bf66e0e994236393458f7"'"/' apache-arrow.rb
+          fi
+          rm -f apache-arrow.rb.bak
+
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          rtools-version: 40
+          r-version: "4.0"
+          Ncpus: 2
+
+      - name: Build Arrow C++ with rtools40
+        shell: bash
+        env:
+          ARROW_HOME: "arrow"
+        run: arrow/ci/scripts/r_windows_build.sh
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: r-lib__libarrow__bin__windows
+          path: build/arrow-*.zip
+
+  r-packages:
+    needs: [source, windows-cpp]
+    name: ${{ matrix.platform }} ${{ matrix.r_version.r }}
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - windows-latest
+          # This is newer than what CRAN builds on, but Travis is no longer an option for us, so...
+          - macos-10.15
+          # - devops-managed # No M1 until the runner application runs native
+        r_version:
+          - { rtools: 40, r: "4.1" }
+          - { rtools: 42, r: "4.2" }
+    steps:
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r_version.r }}
+          rtools-version: ${{ matrix.r_version.rtools }}
+          Ncpus: 2
+      - name: Setup local repo
+        shell: bash
+        run: mkdir repo
+      - name: Get windows binary
+        uses: actions/download-artifact@v3
+        with:
+          name: r-lib__libarrow__bin__windows
+          path: repo/libarrow/bin/windows
+      - name: Get src pkg
+        uses: actions/download-artifact@v3
+        with:
+          name: r-pkg__src__contrib
+          path: repo/src/contrib
+      - name: Update repo index
+        shell: Rscript {0}
+        run: |
+          # getwd() is necessary as this macro is used within jobs using a docker container
+          tools::write_PACKAGES(file.path(getwd(), "repo/src/contrib", fsep = "/"), type = "source", verbose = TRUE)
+      - name: Show repo
+        shell: bash
+        # tree not available in git-bash on windows
+        run: |
+          ls -R repo
+      - name: Add dev repo to .Rprofile
+        shell: Rscript {0}
+        run: |
+          str <- paste0("options(arrow.dev_repo ='file://", getwd(), "/repo' )")
+          print(str)
+          profile_path <- file.path(getwd(), ".Rprofile")
+          write(str, file = profile_path, append = TRUE)
+          # Set envvar for later steps by appending to $GITHUB_ENV
+          write(paste0("R_PROFILE_USER=", profile_path), file = Sys.getenv("GITHUB_ENV"), append = TRUE)
+
+      - name: Build Binary
+        id: build
+        shell: Rscript {0}
+        env:
+          ARROW_R_DEV: TRUE
+        run: |
+          on_windows <- tolower(Sys.info()[["sysname"]]) == "windows"
+
+          # Install dependencies by installing (yesterday's) binary, then removing it
+          install.packages(c("arrow", "cpp11"),
+            type = "binary",
+            repos = c("https://nightlies.apache.org/arrow/r", "https://cloud.r-project.org")
+          )
+
+          cat("Remove old arrow version.\n")
+          remove.packages("arrow")
+
+          # Build
+          Sys.setenv(MAKEFLAGS = paste0("-j", parallel::detectCores()))
+          INSTALL_opts <- "--build"
+          if (!on_windows) {
+            # Windows doesn't support the --strip arg
+            INSTALL_opts <- c(INSTALL_opts, "--strip")
+          }
+
+          cat("Install arrow from dev repo.\n")
+          install.packages(
+            "arrow",
+            type = "source",
+            # The sub is necessary to prevent an error on windows.
+            repos = sub("file://", "file:", getOption("arrow.dev_repo")),,
+            INSTALL_opts = INSTALL_opts
+          )
+
+          # Test
+          library(arrow)
+          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+
+          # encode contrib.url for artifact name
+          cmd <- paste0(
+            "::set-output name=path::",
+            gsub(
+              "/", "__",
+              contrib.url("", type = "binary")
+            ),
+            "\n"
+          )
+          cat(cmd)
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: r-pkg${{ steps.build.outputs.path }}
+          path: arrow_*
+
+  test-linux-binary:
+    needs: [source, linux-cpp]
+    name: Test binary ${{ matrix.config.image }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.config.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          # If libarrow_binary is unset, we're testing that we're automatically
+          # choosing a binary on this OS. If libarrow_binary is TRUE, we're on
+          # an OS that is not in the allowlist, so we have to opt-in to use the
+          # binary. Other env vars used in r_docker_configure.sh can be added
+          # here (like devtoolset) and wired up in the later steps.
+          - {image: "rhub/debian-clang-devel", libarrow_binary: "TRUE"}
+          # fedora-clang-devel cannot use binaries bc of libc++ (uncomment to see the error)
+          # - {image: "rhub/fedora-clang-devel", libarrow_binary: "TRUE"}
+          - {image: "rhub/ubuntu-gcc-release"} # currently ubuntu-20.04 (focal)
+          - {image: "rocker/r-ubuntu:22.04"} # openssl3
+          - {image: "rocker/r-ver"} # whatever is latest ubuntu LTS
+          - {image: "rocker/r-ver:4.0.0"} # ubuntu-20.04
+          - {image: "rocker/r-ver:3.6.3", libarrow_binary: "TRUE"} # debian:buster (10)
+          - {image: "rstudio/r-base:4.1-bionic"} # ubuntu-18.04
+          - {image: "rstudio/r-base:4.2-centos7"}
+          # Even with devtoolset-8, binaries fail because glibc is older than
+          # what we build with on ubuntu-18.04 (uncomment to see the error)
+          # TODO(ARROW-16976): build binaries with older glibc
+          # - {image: "rstudio/r-base:4.2-centos7", devtoolset: "8"}
+    steps:
+      # Get the arrow checkout just for the docker config scripts
+      # Don't need submodules for this (hence false arg to macro): they fail on
+      # actions/checkout for some reason in this context
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: apache/arrow
+          ref: 0330353a93eff799616bf66e0e994236393458f7
+          submodules: False
+
+      - name: Install system requirements
+        env:
+          ARROW_R_DEV: "TRUE" # To install curl/openssl in r_docker_configure.sh
+          DEVTOOLSET_VERSION: ${{ matrix.config.devtoolset }}
+        shell: bash
+        run: |
+          # Make sure R is on the path for the R-hub devel versions (where RPREFIX is set in its dockerfile)
+          echo "${RPREFIX}/bin" >> $GITHUB_PATH
+          export PATH="${RPREFIX}/bin:${PATH}"
+          cd arrow && ARROW_SOURCE_HOME=$(pwd) ./ci/scripts/r_docker_configure.sh
+      - name: Setup local repo
+        shell: bash
+        run: mkdir repo
+      - name: Get ubuntu-18.04 binary
+        uses: actions/download-artifact@v3
+        with:
+          name: r-lib__libarrow__bin__ubuntu-18.04
+          path: repo/libarrow/bin/ubuntu-18.04
+      - name: Get ubuntu-22.04 binary
+        uses: actions/download-artifact@v3
+        with:
+          name: r-lib__libarrow__bin__ubuntu-22.04
+          path: repo/libarrow/bin/ubuntu-22.04
+      - name: Get centos-7 binary
+        uses: actions/download-artifact@v3
+        with:
+          name: r-lib__libarrow__bin__centos-7
+          path: repo/libarrow/bin/centos-7
+      - name: Get src pkg
+        uses: actions/download-artifact@v3
+        with:
+          name: r-pkg__src__contrib
+          path: repo/src/contrib
+      - name: Update repo index
+        shell: Rscript {0}
+        run: |
+          # getwd() is necessary as this macro is used within jobs using a docker container
+          tools::write_PACKAGES(file.path(getwd(), "repo/src/contrib", fsep = "/"), type = "source", verbose = TRUE)
+      - name: Show repo
+        shell: bash
+        # tree not available in git-bash on windows
+        run: |
+          ls -R repo
+      - name: Add dev repo to .Rprofile
+        shell: Rscript {0}
+        run: |
+          str <- paste0("options(arrow.dev_repo ='file://", getwd(), "/repo' )")
+          print(str)
+          profile_path <- file.path(getwd(), ".Rprofile")
+          write(str, file = profile_path, append = TRUE)
+          # Set envvar for later steps by appending to $GITHUB_ENV
+          write(paste0("R_PROFILE_USER=", profile_path), file = Sys.getenv("GITHUB_ENV"), append = TRUE)
+
+      - name: Install arrow from our repo
+        env:
+          ARROW_R_DEV: "TRUE"
+          LIBARROW_BUILD: "FALSE"
+          LIBARROW_BINARY: ${{ matrix.config.libarrow_binary }}
+          DEVTOOLSET_VERSION: ${{ matrix.config.devtoolset }}
+        shell: bash
+        run: |
+          if [[ "$DEVTOOLSET_VERSION" -gt 0 ]]; then
+            # enable the devtoolset version to use it
+            source /opt/rh/devtoolset-$DEVTOOLSET_VERSION/enable
+          fi
+          Rscript -e '
+          source("https://raw.githubusercontent.com/apache/arrow/master/ci/etc/rprofile")
+
+          install.packages(
+            "arrow",
+            repos = c(getOption("arrow.dev_repo"), getOption("repos")),
+            verbose = TRUE
+          )
+
+          library(arrow)
+          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+
+          # Our Version should always be > CRAN so we would detect a CRAN version here.
+          stopifnot(packageVersion("arrow") == "${{needs.source.outputs.pkg_version}}")
+
+          '
+
+  test-source:
+    needs: source
+    name: Test linux source build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          install-r: false
+      - name: Setup local repo
+        shell: bash
+        run: mkdir repo
+      - name: Get src pkg
+        uses: actions/download-artifact@v3
+        with:
+          name: r-pkg__src__contrib
+          path: repo/src/contrib
+      - name: Update repo index
+        shell: Rscript {0}
+        run: |
+          # getwd() is necessary as this macro is used within jobs using a docker container
+          tools::write_PACKAGES(file.path(getwd(), "repo/src/contrib", fsep = "/"), type = "source", verbose = TRUE)
+      - name: Show repo
+        shell: bash
+        # tree not available in git-bash on windows
+        run: |
+          ls -R repo
+      - name: Add dev repo to .Rprofile
+        shell: Rscript {0}
+        run: |
+          str <- paste0("options(arrow.dev_repo ='file://", getwd(), "/repo' )")
+          print(str)
+          profile_path <- file.path(getwd(), ".Rprofile")
+          write(str, file = profile_path, append = TRUE)
+          # Set envvar for later steps by appending to $GITHUB_ENV
+          write(paste0("R_PROFILE_USER=", profile_path), file = Sys.getenv("GITHUB_ENV"), append = TRUE)
+
+      - name: Install arrow from nightly repo
+        env:
+          # Test source build so be sure not to download a binary
+          LIBARROW_BINARY: "FALSE"
+        shell: Rscript {0}
+        run: |
+          source("https://raw.githubusercontent.com/apache/arrow/master/ci/etc/rprofile")
+
+          install.packages(
+            "arrow",
+            repos = c(getOption("arrow.dev_repo"), getOption("repos")),
+            verbose = TRUE
+          )
+
+          library(arrow)
+          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+
+          # Our Version should always be > CRAN so we would detect a CRAN version here.
+          stopifnot(packageVersion("arrow") == "${{needs.source.outputs.pkg_version}}")
+
+
+      - name: Retry with verbosity if that failed
+        if: failure()
+        env:
+          LIBARROW_BINARY: "FALSE"
+          ARROW_R_DEV: "TRUE"
+        run: |
+          source("https://raw.githubusercontent.com/apache/arrow/master/ci/etc/rprofile")
+
+          install.packages(
+            "arrow",
+            repos = c(getOption("arrow.dev_repo"), getOption("repos")),
+            verbose = TRUE
+          )
+
+          library(arrow)
+          read_parquet(system.file("v0.7.1.parquet", package = "arrow"))
+
+          # Our Version should always be > CRAN so we would detect a CRAN version here.
+          stopifnot(packageVersion("arrow") == "${{needs.source.outputs.pkg_version}}")
+
+
+  upload-binaries:
+    # Only upload binaries if all tests pass.
+    needs: [ r-packages, test-source, test-linux-binary]
+    name: Upload artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Arrow
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: arrow
+          repository: apache/arrow
+          ref: 0330353a93eff799616bf66e0e994236393458f7
+          submodules: recursive
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: Install R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          install-r: false
+      - name: Rename artifacts
+        shell: Rscript {0}
+        run: |
+          file_paths <- list.files("artifacts", include.dirs = FALSE, recursive = TRUE)
+          new_names <- file.path("binaries", sub("/", "__", file_paths))
+          dir.create("binaries", showWarnings = FALSE)
+          file.copy(file.path("artifacts", file_paths), new_names)
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Setup Crossbow
+        shell: bash
+        run: pip install -e arrow/dev/archery[crossbow-upload]
+      - name: Upload artifacts
+        shell: bash
+        run: |
+          archery crossbow \
+          --queue-path $(pwd) \
+          --queue-remote https://github.com/ursacomputing/crossbow \
+          upload-artifacts \
+          --sha nightly-packaging-2022-07-20-0-github-r-binary-packages \
+          --tag nightly-packaging-2022-07-20-0-github-r-binary-packages \
+          "binaries/r-*"
+        env:
+          CROSSBOW_GITHUB_TOKEN: ${{ secrets.CROSSBOW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
