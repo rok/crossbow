@@ -1,0 +1,39 @@
+!Job
+target: !Target
+  head: d360bb141357ea153cc8ec68135969a450aa0113
+  email: unknown
+  branch: sccache
+  remote: https://github.com/assignUser/arrow.git
+  github_repo: assignUser/arrow
+  version: 9.0.0.dev445
+  no_rc_version: 9.0.0.dev445
+  no_rc_semver_version: 9.0.0-dev445
+tasks:
+  conan-minimum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      image: conan
+
+    branch: actions-5a2abfa2e4-github-conan-minimum
+    commit: 3134c7aff0331d7409cf1f82a62689e1498ec46c
+  conan-maximum: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      flags: >-
+        -e ARROW_CONAN_PARQUET=True
+        -e ARROW_CONAN_WITH_BROTLI=True
+        -e ARROW_CONAN_WITH_JEMALLOC=True
+        -e ARROW_CONAN_WITH_LZ4=True
+        -e ARROW_CONAN_WITH_SNAPPY=True
+      image: conan
+
+  ########################### Python Minimal ############################
+
+    branch: actions-5a2abfa2e4-github-conan-maximum
+    commit: bd8cd016ad086b40f6be3af6308aa237888d4466
+params: {}
+branch: actions-5a2abfa2e4
