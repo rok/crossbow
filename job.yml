@@ -1,0 +1,438 @@
+!Job
+target: !Target
+  head: 8947536858335b567d1c1790f1a82fe2152e13a9
+  email: unknown
+  branch: ARROW-16340
+  remote: https://github.com/AlenkaF/arrow.git
+  github_repo: AlenkaF/arrow
+  version: 9.0.0.dev553
+  no_rc_version: 9.0.0.dev553
+  no_rc_semver_version: 9.0.0-dev553
+tasks:
+  test-conda-python-3.9: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.9'
+      image: conda-python
+    branch: actions-d00562d0b2-github-test-conda-python-3.9
+    commit: ab85ac79c19049a19de95b04e762d0e00a3ec1c3
+  example-python-minimal-build-ubuntu-venv: !Task
+    ci: github
+    template: python-minimal-build/github.linux.yml
+    artifacts: []
+    params:
+      type: minimal_build
+      image: minimal-ubuntu-venv
+
+  ############################## Conda Linux ############################
+
+    branch: actions-d00562d0b2-github-example-python-minimal-build-ubuntu-venv
+    commit: 6c0037fbf5371792e2988196f5737341334e4039
+  test-conda-python-3.7-hdfs-3.2.1: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.7
+        HDFS: 3.2.1
+      image: conda-python-hdfs
+
+    branch: actions-d00562d0b2-github-test-conda-python-3.7-hdfs-3.2.1
+    commit: 93d6d2ee2832f6e8affefbdb5e036f29db358f05
+  test-conda-python-3.8-spark-v3.2.0: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.8'
+        SPARK: v3.2.0
+        TEST_PYARROW_ONLY: 'false'
+      # use the branch-3.0 of spark, so prevent reusing any layers
+      flags: --no-leaf-cache
+      image: conda-python-spark
+      fetch_depth: 0
+    branch: actions-d00562d0b2-github-test-conda-python-3.8-spark-v3.2.0
+    commit: b053ada687110b6046001b2889678ae212c0417d
+  verify-rc-source-python-linux-almalinux-8-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        ALMALINUX: '8'
+      target: python
+      distro: almalinux
+    branch: actions-d00562d0b2-github-verify-rc-source-python-linux-almalinux-8-amd64
+    commit: 4fdccb0f6b7db9c0b2cf4b748b71a37ed5c7f7a6
+  verify-rc-source-python-linux-ubuntu-20.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '20.04'
+      target: python
+      distro: ubuntu
+    branch: actions-d00562d0b2-github-verify-rc-source-python-linux-ubuntu-20.04-amd64
+    commit: 463f68bec2bdbbd170060952f88a1746581c5c57
+  python-sdist: !Task
+    ci: github
+    template: python-sdist/github.yml
+    artifacts:
+    - pyarrow-9.0.0.dev553.tar.gz
+    params: {}
+    branch: actions-d00562d0b2-github-python-sdist
+    commit: 1d2a7550dc748cbc644441c5aa03640952172851
+  example-python-minimal-build-fedora-conda: !Task
+    ci: github
+    template: python-minimal-build/github.linux.yml
+    artifacts: []
+    params:
+      type: minimal_build
+      image: minimal-fedora-conda
+    branch: actions-d00562d0b2-github-example-python-minimal-build-fedora-conda
+    commit: 0f34fc836b61587b9cf5e17bd6dae04d3604e688
+  test-ubuntu-20.04-python-3: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: 20.04
+      image: ubuntu-python
+
+    branch: actions-d00562d0b2-azure-test-ubuntu-20.04-python-3
+    commit: 5d67824c38d0d85f5ea1c7a083efc81512d6026e
+  test-conda-python-3.9-dask-master: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.9
+        DASK: master
+      # use the latest dask release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-dask
+
+# Turbodbc is currently failing to build. See:
+# https://issues.apache.org/jira/browse/ARROW-15997
+# #   test-conda-python-3.7-turbodbc-latest:
+#     ci: github
+#     template: docker-tests/github.linux.yml
+#     params:
+#       env:
+#         PYTHON: 3.7
+#         TURBODBC: latest
+#       # use the latest turbodbc release, so prevent reusing any cached layers
+#       flags: --no-leaf-cache
+#       image: conda-python-turbodbc
+# #   test-conda-python-3.7-turbodbc-master:
+#     ci: github
+#     template: docker-tests/github.linux.yml
+#     params:
+#       env:
+#         PYTHON: 3.7
+#         TURBODBC: master
+#       # use the latest turbodbc release, so prevent reusing any cached layers
+#       flags: --no-leaf-cache
+#       image: conda-python-turbodbc
+# 
+    branch: actions-d00562d0b2-github-test-conda-python-3.9-dask-master
+    commit: e21a2f2fa48066db12ef131132acb7dad55cfd53
+  test-conda-python-3.9-pandas-master: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.9'
+        PANDAS: master
+        NUMPY: nightly
+      # use the latest pandas release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-pandas
+
+    branch: actions-d00562d0b2-github-test-conda-python-3.9-pandas-master
+    commit: f6beb939fd625814fbb7efb5e4d738c67665439f
+  test-conda-python-3.7: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.7'
+      image: conda-python
+    branch: actions-d00562d0b2-github-test-conda-python-3.7
+    commit: 178943356bbb5357d740ef9fb61145727eb75fbf
+  test-conda-python-3.9-dask-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.9
+        DASK: latest
+      # use the latest dask release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-dask
+    branch: actions-d00562d0b2-github-test-conda-python-3.9-dask-latest
+    commit: c2647a59a4dd788cc42ae6672faa4d2e145ac0a3
+  verify-rc-source-python-macos-conda-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: python
+      use_conda: true
+      github_runner: macos-10.15
+
+    branch: actions-d00562d0b2-github-verify-rc-source-python-macos-conda-amd64
+    commit: f642a349b2ff3c186f1a52dca84995669fcd8e11
+  verify-rc-source-python-linux-ubuntu-22.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '22.04'
+      target: python
+      distro: ubuntu
+    branch: actions-d00562d0b2-github-verify-rc-source-python-linux-ubuntu-22.04-amd64
+    commit: d8ae9292b417578ca453cff5dde5b345cf073a79
+  test-conda-python-3.7-pandas-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.7'
+        PANDAS: latest
+        NUMPY: latest
+        # ensure we have at least one build with parquet encryption disabled
+        PARQUET_REQUIRE_ENCRYPTION: OFF
+      # use the latest pandas release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-pandas
+    branch: actions-d00562d0b2-github-test-conda-python-3.7-pandas-latest
+    commit: 1cfc10283f4a000de9f964f88c7b6438f77d4197
+  test-debian-11-python-3: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        DEBIAN: 11
+      image: debian-python
+
+    branch: actions-d00562d0b2-azure-test-debian-11-python-3
+    commit: 2d694121724b71ae2b59bc0c99583d5b0da4ef9f
+  verify-rc-source-python-macos-amd64: !Task
+    ci: github
+    template: verify-rc/github.macos.amd64.yml
+    artifacts: []
+    params:
+      target: python
+      github_runner: macos-10.15
+    branch: actions-d00562d0b2-github-verify-rc-source-python-macos-amd64
+    commit: bcf2690a9fbea959c5f7d1ca90605030ee2ad480
+  verify-rc-source-python-macos-arm64: !Task
+    ci: github
+    template: verify-rc/github.macos.arm64.yml
+    artifacts: []
+    params:
+      env:
+        ARROW_PLASMA: 0
+        ARROW_FLIGHT: 0
+        ARROW_GANDIVA: 0
+        TEST_INTEGRATION_JAVA: 0
+        PYTEST_ADDOPTS: -k 'not test_cancellation'
+      target: python
+      github_runner: [self-hosted, macOS, arm64]
+    branch: actions-d00562d0b2-github-verify-rc-source-python-macos-arm64
+    commit: 32d33b351cd3781d72b734431a675ee0fbb60fad
+  test-conda-python-3.8-pandas-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.8'
+        PANDAS: latest
+        NUMPY: latest
+        # ensure we have at least one build with parquet encryption disabled
+        PARQUET_REQUIRE_ENCRYPTION: OFF
+      # use the latest pandas release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-pandas
+    branch: actions-d00562d0b2-github-test-conda-python-3.8-pandas-latest
+    commit: 79398b2054cc6f4214b7d14c575fbe3cc33272a4
+  test-conda-python-3.8: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.8'
+      image: conda-python
+    branch: actions-d00562d0b2-github-test-conda-python-3.8
+    commit: 768a1e99756304bd46446ce1f73c3ef5ed4e5303
+  verify-rc-source-python-linux-ubuntu-18.04-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        UBUNTU: '18.04'
+      target: python
+      distro: ubuntu
+    branch: actions-d00562d0b2-github-verify-rc-source-python-linux-ubuntu-18.04-amd64
+    commit: c1988da8d50ec7e44975d1cbd55cdcf401bcd98a
+  test-conda-python-3.7-kartothek-latest: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.7
+        KARTOTHEK: latest
+      flags: --no-leaf-cache
+      image: conda-python-kartothek
+    branch: actions-d00562d0b2-github-test-conda-python-3.7-kartothek-latest
+    commit: ad153d12a4c650cb0b7df0bd43f1d2bdf9b9f0d5
+  test-fedora-35-python-3: !Task
+    ci: azure
+    template: docker-tests/azure.linux.yml
+    artifacts: []
+    params:
+      env:
+        FEDORA: 35
+      image: fedora-python
+
+    branch: actions-d00562d0b2-azure-test-fedora-35-python-3
+    commit: f0db17ede7c6201e0a17de99c281c2eab74e1712
+  test-conda-python-3.7-spark-v3.1.2: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.7'
+        SPARK: v3.1.2
+        TEST_PYARROW_ONLY: 'false'
+      # use the branch-3.0 of spark, so prevent reusing any layers
+      flags: --no-leaf-cache
+      image: conda-python-spark
+      fetch_depth: 0
+    branch: actions-d00562d0b2-github-test-conda-python-3.7-spark-v3.1.2
+    commit: 5f14fb917ef4ca98e8d699ec446b39f09bfffda4
+  test-conda-python-3.7-pandas-0.24: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.7'
+        PANDAS: '0.24'
+        NUMPY: '1.19'
+      image: conda-python-pandas
+    branch: actions-d00562d0b2-github-test-conda-python-3.7-pandas-0.24
+    commit: f9c5e56341177bfc239043117e6a48515748055f
+  test-conda-python-3.7-hdfs-2.9.2: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.7
+        HDFS: 2.9.2
+      image: conda-python-hdfs
+    branch: actions-d00562d0b2-github-test-conda-python-3.7-hdfs-2.9.2
+    commit: d2ff109ce0a738f50540fe6fee532f421bcc61aa
+  test-conda-python-3.8-pandas-nightly: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.8'
+        PANDAS: nightly
+        NUMPY: nightly
+      # use the latest pandas release, so prevent reusing any cached layers
+      flags: --no-leaf-cache
+      image: conda-python-pandas
+    branch: actions-d00562d0b2-github-test-conda-python-3.8-pandas-nightly
+    commit: 88f8d7c270c684902bb5979ce8ce60701bada0ba
+  test-conda-python-3.8-hypothesis: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.8
+        HYPOTHESIS_PROFILE: ci
+        PYARROW_TEST_HYPOTHESIS: ON
+        # limit to execute hypothesis tests only
+        PYTEST_ARGS: -m hypothesis
+      image: conda-python-pandas
+
+    branch: actions-d00562d0b2-github-test-conda-python-3.8-hypothesis
+    commit: a5664387110d3854974ae0962ac90b0f26b92962
+  test-conda-python-3.10: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.10'
+      image: conda-python
+
+    branch: actions-d00562d0b2-github-test-conda-python-3.10
+    commit: afb267fde6b7e5e9eb00b208339ecc781fcfaaf6
+  verify-rc-source-python-linux-conda-latest-amd64: !Task
+    ci: github
+    template: verify-rc/github.linux.amd64.docker.yml
+    artifacts: []
+    params:
+      env:
+        CONDA: latest
+      target: python
+      distro: conda
+    branch: actions-d00562d0b2-github-verify-rc-source-python-linux-conda-latest-amd64
+    commit: 9ded9b3fda4c42ca391ee37ddc07f2ae78d5cd99
+  test-conda-python-3.7-kartothek-master: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: 3.7
+        KARTOTHEK: master
+      flags: --no-leaf-cache
+      image: conda-python-kartothek
+
+    branch: actions-d00562d0b2-github-test-conda-python-3.7-kartothek-master
+    commit: 5f893a504753da8ac142a97f1823310d72f958e9
+  test-conda-python-3.9-spark-master: !Task
+    ci: github
+    template: docker-tests/github.linux.yml
+    artifacts: []
+    params:
+      env:
+        PYTHON: '3.9'
+        SPARK: master
+        TEST_PYARROW_ONLY: 'false'
+      # use the branch-3.0 of spark, so prevent reusing any layers
+      flags: --no-leaf-cache
+      image: conda-python-spark
+      fetch_depth: 0
+
+    branch: actions-d00562d0b2-github-test-conda-python-3.9-spark-master
+    commit: 30bad805fcb33a94ef725fc0002a58ec729c2f92
+params: {}
+branch: actions-d00562d0b2
